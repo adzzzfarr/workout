@@ -95,6 +95,45 @@ class WorkoutData extends ChangeNotifier {
     loadHeatMap();
   }
 
+  void editExercise(
+    String workoutName,
+    String originalExerciseName,
+    String editedExerciseName,
+    double weight,
+    int sets,
+    int reps,
+  ) {
+    Workout intendedWorkout = getIntendedWorkout(workoutName);
+
+    int index = intendedWorkout.exercises
+        .indexWhere((exercise) => exercise.name == originalExerciseName);
+
+    if (index != -1) {
+      Exercise editedExercise = Exercise(
+        name: editedExerciseName,
+        weight: weight,
+        sets: sets,
+        reps: reps,
+        isCompleted: intendedWorkout.exercises[index].isCompleted,
+      );
+
+      intendedWorkout.exercises[index] = editedExercise;
+      notifyListeners();
+
+      db.saveToDatabase(workoutList);
+    }
+  }
+
+  void deleteExercise(String workoutName, String exerciseName) {
+    Workout intendedWorkout = getIntendedWorkout(workoutName);
+
+    intendedWorkout.exercises
+        .removeWhere((exercise) => exercise.name == exerciseName);
+
+    notifyListeners();
+    db.saveToDatabase(workoutList);
+  }
+
   Workout getIntendedWorkout(String workoutName) {
     return workoutList.firstWhere((element) => element.name == workoutName);
   }

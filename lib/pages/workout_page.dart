@@ -26,7 +26,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
           title: Text(widget.workoutName),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => createNewExercise(),
+          onPressed: () => showExerciseDetails(
+            exerciseName: null,
+            weight: null,
+            sets: null,
+            reps: null,
+          ),
           child: const Icon(Icons.add),
         ),
         body: ListView.builder(
@@ -59,6 +64,28 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   .exercises[index]
                   .name,
             ),
+            onTilePressed: (exerciseName) => showExerciseDetails(
+              exerciseName: exerciseName,
+              weight: value
+                  .getIntendedWorkout(widget.workoutName)
+                  .exercises[index]
+                  .weight,
+              sets: value
+                  .getIntendedWorkout(widget.workoutName)
+                  .exercises[index]
+                  .sets,
+              reps: value
+                  .getIntendedWorkout(widget.workoutName)
+                  .exercises[index]
+                  .reps,
+            ),
+            onDismissed: () => deleteExercise(
+              widget.workoutName,
+              value
+                  .getIntendedWorkout(widget.workoutName)
+                  .exercises[index]
+                  .name,
+            ),
           ),
         ),
       ),
@@ -70,7 +97,17 @@ class _WorkoutPageState extends State<WorkoutPage> {
         .checkOffExercise(workoutName, exerciseName);
   }
 
-  void createNewExercise() {
+  void showExerciseDetails({
+    String? exerciseName,
+    double? weight,
+    int? sets,
+    int? reps,
+  }) {
+    exerciseNameController.text = exerciseName ?? '';
+    weightController.text = weight?.toString() ?? '';
+    setsController.text = sets?.toString() ?? '';
+    repsController.text = reps?.toString() ?? '';
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -102,11 +139,17 @@ class _WorkoutPageState extends State<WorkoutPage> {
         ),
         actions: [
           MaterialButton(
-            onPressed: cancelNewExercise,
+            onPressed: cancelExercise,
             child: const Text('Cancel'),
           ),
           MaterialButton(
-            onPressed: saveNewExercise,
+            onPressed: () {
+              if (exerciseName == null) {
+                saveNewExercise();
+              } else {
+                saveEditedExercise(exerciseName);
+              }
+            },
             child: const Text('Save'),
           ),
         ],
@@ -135,11 +178,40 @@ class _WorkoutPageState extends State<WorkoutPage> {
     repsController.clear();
   }
 
-  void cancelNewExercise() {
+  void cancelExercise() {
     Navigator.pop(context);
     exerciseNameController.clear();
     weightController.clear();
     setsController.clear();
     repsController.clear();
+  }
+
+  void saveEditedExercise(String originalExerciseName) {
+    String editedExerciseName = exerciseNameController.text;
+    double weight = double.parse(weightController.text);
+    int sets = int.parse(setsController.text);
+    int reps = int.parse(repsController.text);
+
+    Provider.of<WorkoutData>(context, listen: false).editExercise(
+      widget.workoutName,
+      originalExerciseName,
+      editedExerciseName,
+      weight,
+      sets,
+      reps,
+    );
+
+    Navigator.pop(context);
+    exerciseNameController.clear();
+    weightController.clear();
+    setsController.clear();
+    repsController.clear();
+  }
+
+  void deleteExercise(String workoutName, String exerciseName) {
+    Provider.of<WorkoutData>(context, listen: false).deleteExercise(
+      workoutName,
+      exerciseName,
+    );
   }
 }

@@ -7,6 +7,8 @@ class ExerciseTile extends StatelessWidget {
   final int reps;
   final bool isCompleted;
   final void Function(bool) onCheckboxChanged;
+  final void Function(String?) onTilePressed;
+  final void Function() onDismissed;
 
   const ExerciseTile({
     required this.exerciseName,
@@ -15,35 +17,54 @@ class ExerciseTile extends StatelessWidget {
     required this.reps,
     required this.isCompleted,
     required this.onCheckboxChanged,
+    required this.onTilePressed,
+    required this.onDismissed,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(exerciseName),
-      subtitle: Row(
-        children: [
-          Chip(
-            label: Text(
-              "${weight.toString()} KG",
-            ),
+    return Dismissible(
+      key: Key(exerciseName),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        child: const Padding(
+          padding: EdgeInsets.all(16),
+          child: Icon(
+            Icons.edit,
+            color: Colors.white,
           ),
-          Chip(
-            label: Text(
-              "${sets.toString()} Sets",
-            ),
-          ),
-          Chip(
-            label: Text(
-              "${reps.toString()} Reps",
-            ),
-          ),
-        ],
+        ),
       ),
-      trailing: Checkbox(
-        value: isCompleted,
-        onChanged: (value) => onCheckboxChanged(value!),
+      onDismissed: (direction) => onDismissed(),
+      child: ListTile(
+        title: Text(exerciseName),
+        subtitle: Row(
+          children: [
+            Chip(
+              label: Text(
+                "${weight.toString()} KG",
+              ),
+            ),
+            Chip(
+              label: Text(
+                "${sets.toString()} Sets",
+              ),
+            ),
+            Chip(
+              label: Text(
+                "${reps.toString()} Reps",
+              ),
+            ),
+          ],
+        ),
+        trailing: Checkbox(
+          value: isCompleted,
+          onChanged: (value) => onCheckboxChanged(value!),
+        ),
+        onTap: () => onTilePressed(exerciseName),
       ),
     );
   }
