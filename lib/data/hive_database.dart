@@ -44,7 +44,12 @@ class HiveDatabase {
   }
 
   List<Workout> readFromDatabase() {
-    return myBox.get("WORKOUTS", defaultValue: []) ?? [];
+    List<Workout> workouts =
+        (myBox.get("WORKOUTS", defaultValue: []) as List<dynamic>)
+            .map((e) => e as Workout)
+            .toList();
+
+    return workouts;
   }
 
   int getCompletionStatus(String yyyymmdd) {
