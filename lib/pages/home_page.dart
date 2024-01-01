@@ -25,34 +25,35 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Consumer<WorkoutData>(
       builder: (context, value, child) => Scaffold(
-          appBar: AppBar(
-            title: const Text('Workout Tracker'),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: createNewWorkout,
-            child: const Icon(Icons.add),
-          ),
-          body: ListView(
-            children: [
-              WorkoutHeatMap(
-                datasets: value.heatMapDataSet,
-                startDateYYYYMMDD: value.getStartDate(),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: value.getWorkoutList().length,
-                itemBuilder: (context, index) => ListTile(
-                  title: Text(value.getWorkoutList()[index].name),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios),
-                    onPressed: () =>
-                        goToWorkoutPage(value.getWorkoutList()[index].name),
-                  ),
+        appBar: AppBar(
+          title: const Text('Workout Tracker'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: createNewWorkout,
+          child: const Icon(Icons.add),
+        ),
+        body: ListView(
+          children: [
+            WorkoutHeatMap(
+              datasets: value.heatMapDataSet,
+              startDateYYYYMMDD: value.getStartDate(),
+            ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: value.getWorkoutList().length,
+              itemBuilder: (context, index) => ListTile(
+                title: Text(value.getWorkoutList()[index].name),
+                trailing: IconButton(
+                  icon: const Icon(Icons.arrow_forward_ios),
+                  onPressed: () =>
+                      goToWorkoutPage(value.getWorkoutList()[index].name),
                 ),
               ),
-            ],
-          )),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

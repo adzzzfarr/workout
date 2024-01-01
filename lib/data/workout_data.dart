@@ -56,9 +56,7 @@ class WorkoutData extends ChangeNotifier {
 
   void addWorkout(String name) {
     workoutList.add(Workout(name: name, exercises: []));
-
     notifyListeners();
-
     db.saveToDatabase(workoutList);
   }
 
@@ -81,7 +79,6 @@ class WorkoutData extends ChangeNotifier {
     );
 
     notifyListeners();
-
     db.saveToDatabase(workoutList);
   }
 
