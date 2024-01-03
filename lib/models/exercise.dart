@@ -8,22 +8,25 @@ class Exercise extends HiveObject {
   final String name;
 
   @HiveField(1)
-  final double weight;
+  final Map<int, List<dynamic>> setWeightReps;
+  // 1: [10.0, 10] => Set 1 was performed with 10.0kg for 10 reps
 
   @HiveField(2)
-  final int sets;
-
-  @HiveField(3)
-  final int reps;
-
-  @HiveField(4)
   bool isCompleted;
 
   Exercise({
     required this.name,
-    required this.weight,
-    required this.sets,
-    required this.reps,
+    required this.setWeightReps,
     this.isCompleted = false,
   });
+
+  List<Map<String, dynamic>> getSetsList() {
+    return setWeightReps.entries
+        .map((entry) => {
+              'set': entry.key,
+              'weight': entry.value[0],
+              'reps': entry.value[1],
+            })
+        .toList();
+  }
 }

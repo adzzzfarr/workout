@@ -14,9 +14,11 @@ class WorkoutData extends ChangeNotifier {
       exercises: [
         Exercise(
           name: "Bench Press",
-          weight: 10,
-          sets: 3,
-          reps: 10,
+          setWeightReps: {
+            1: [10.0, 10],
+            2: [9.0, 9],
+            3: [8.0, 8],
+          },
         ),
       ],
     ),
@@ -25,9 +27,11 @@ class WorkoutData extends ChangeNotifier {
       exercises: [
         Exercise(
           name: "Squat",
-          weight: 10,
-          sets: 3,
-          reps: 10,
+          setWeightReps: {
+            1: [10.0, 10],
+            2: [9.0, 9],
+            3: [8.0, 8],
+          },
         ),
       ],
     ),
@@ -60,21 +64,23 @@ class WorkoutData extends ChangeNotifier {
     db.saveToDatabase(workoutList);
   }
 
-  void addExercise(
+  void addNewExercise(
     String workoutName,
     String exerciseName,
-    double weight,
     int sets,
-    int reps,
   ) {
     Workout intendedWorkout = getIntendedWorkout(workoutName);
+
+    Map<int, List<dynamic>> setWeightReps = {};
+
+    for (int i = 1; i <= sets; i++) {
+      setWeightReps[i] = [0.0, 0];
+    }
 
     intendedWorkout.exercises.add(
       Exercise(
         name: exerciseName,
-        weight: weight,
-        sets: sets,
-        reps: reps,
+        setWeightReps: setWeightReps,
       ),
     );
 
@@ -96,9 +102,8 @@ class WorkoutData extends ChangeNotifier {
     String workoutName,
     String originalExerciseName,
     String editedExerciseName,
-    double weight,
-    int sets,
-    int reps,
+    int originalNoOfSets,
+    int editedNoOfSets,
   ) {
     Workout intendedWorkout = getIntendedWorkout(workoutName);
 
@@ -106,18 +111,61 @@ class WorkoutData extends ChangeNotifier {
         .indexWhere((exercise) => exercise.name == originalExerciseName);
 
     if (index != -1) {
+      final editedSetWeightReps =
+          intendedWorkout.exercises[index].setWeightReps;
+
+      if (editedNoOfSets < originalNoOfSets) {
+        editedSetWeightReps.removeWhere((key, value) => key > editedNoOfSets);
+      } else if (editedNoOfSets > originalNoOfSets) {
+        for (int i = originalNoOfSets + 1; i <= editedNoOfSets; i++) {
+          editedSetWeightReps[i] = [0.0, 0];
+        }
+      }
+      // if editedNoOfSets == originalNoOfSets, there is no need to change setWeightReps
+
       Exercise editedExercise = Exercise(
         name: editedExerciseName,
-        weight: weight,
-        sets: sets,
-        reps: reps,
+        setWeightReps: editedSetWeightReps,
         isCompleted: intendedWorkout.exercises[index].isCompleted,
       );
 
       intendedWorkout.exercises[index] = editedExercise;
       notifyListeners();
-
       db.saveToDatabase(workoutList);
+    }
+  }
+
+  void editSet(
+    String workoutName,
+    String exerciseName,
+    int setNumber,
+    double editedWeight,
+    int editedReps,
+  ) {
+    Workout intendedWorkout = getIntendedWorkout(workoutName);
+
+    int exerciseIndex = intendedWorkout.exercises
+        .indexWhere((exercise) => exercise.name == exerciseName);
+
+    if (exerciseIndex != -1) {
+      Exercise intendedExercise = intendedWorkout.exercises[exerciseIndex];
+
+      Map<int, List<dynamic>> setWithEditedWeightReps =
+          Map.from(intendedExercise.setWeightReps);
+
+      setWithEditedWeightReps[setNumber] = [editedWeight, editedReps];
+
+      Exercise editedExercise = Exercise(
+        name: intendedExercise.name,
+        setWeightReps: setWithEditedWeightReps,
+        isCompleted: intendedExercise.isCompleted,
+      );
+
+      intendedWorkout.exercises[exerciseIndex] = editedExercise;
+      notifyListeners();
+      db.saveToDatabase(workoutList);
+    } else {
+      print('Exercise $exerciseName not found in $workoutName');
     }
   }
 

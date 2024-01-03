@@ -18,26 +18,21 @@ class ExerciseAdapter extends TypeAdapter<Exercise> {
     };
     return Exercise(
       name: fields[0] as String,
-      weight: fields[1] as double,
-      sets: fields[2] as int,
-      reps: fields[3] as int,
-      isCompleted: fields[4] as bool,
+      setWeightReps: (fields[1] as Map).map((dynamic k, dynamic v) =>
+          MapEntry(k as int, (v as List).cast<dynamic>())),
+      isCompleted: fields[2] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Exercise obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
-      ..write(obj.weight)
+      ..write(obj.setWeightReps)
       ..writeByte(2)
-      ..write(obj.sets)
-      ..writeByte(3)
-      ..write(obj.reps)
-      ..writeByte(4)
       ..write(obj.isCompleted);
   }
 

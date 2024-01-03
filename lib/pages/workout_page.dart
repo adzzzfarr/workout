@@ -26,11 +26,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
           title: Text(widget.workoutName),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => showExerciseDetails(
+          onPressed: () => showExerciseDetailsDialog(
             exerciseName: null,
-            weight: null,
             sets: null,
-            reps: null,
           ),
           child: const Icon(Icons.add),
         ),
@@ -41,22 +39,24 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 .getIntendedWorkout(widget.workoutName)
                 .exercises[index]
                 .name,
-            weight: value
+            setsList: value
                 .getIntendedWorkout(widget.workoutName)
                 .exercises[index]
-                .weight,
-            sets: value
-                .getIntendedWorkout(widget.workoutName)
-                .exercises[index]
-                .sets,
-            reps: value
-                .getIntendedWorkout(widget.workoutName)
-                .exercises[index]
-                .reps,
+                .getSetsList(),
             isCompleted: value
                 .getIntendedWorkout(widget.workoutName)
                 .exercises[index]
                 .isCompleted,
+            onEditSet: (exerciseName, setNumber) => showSetDetailsDialog(
+              exerciseName,
+              setNumber,
+              {
+                setNumber: value
+                    .getIntendedWorkout(widget.workoutName)
+                    .exercises[index]
+                    .setWeightReps[setNumber]
+              },
+            ),
             onCheckboxChanged: (val) => onCheckBoxChanged(
               widget.workoutName,
               value
@@ -64,20 +64,13 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   .exercises[index]
                   .name,
             ),
-            onTilePressed: (exerciseName) => showExerciseDetails(
+            onTileLongPressed: (exerciseName) => showExerciseDetailsDialog(
               exerciseName: exerciseName,
-              weight: value
-                  .getIntendedWorkout(widget.workoutName)
-                  .exercises[index]
-                  .weight,
               sets: value
                   .getIntendedWorkout(widget.workoutName)
                   .exercises[index]
-                  .sets,
-              reps: value
-                  .getIntendedWorkout(widget.workoutName)
-                  .exercises[index]
-                  .reps,
+                  .setWeightReps
+                  .length,
             ),
             onDismissed: () => deleteExercise(
               widget.workoutName,
@@ -97,16 +90,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
         .checkOffExercise(workoutName, exerciseName);
   }
 
-  void showExerciseDetails({
+  void showExerciseDetailsDialog({
     String? exerciseName,
-    double? weight,
     int? sets,
-    int? reps,
   }) {
     exerciseNameController.text = exerciseName ?? '';
-    weightController.text = weight?.toString() ?? '';
     setsController.text = sets?.toString() ?? '';
-    repsController.text = reps?.toString() ?? '';
 
     showDialog(
       context: context,
@@ -120,26 +109,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
               decoration: const InputDecoration(hintText: "Exercise Name"),
             ),
             TextField(
-              controller: weightController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(hintText: "Weight"),
-            ),
-            TextField(
               controller: setsController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(hintText: "Sets"),
-            ),
-            TextField(
-              controller: repsController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(hintText: "Reps"),
             ),
           ],
         ),
         actions: [
           MaterialButton(
-            onPressed: cancelExercise,
+            onPressed: cancelEdit,
             child: const Text('Cancel'),
           ),
           MaterialButton(
@@ -147,7 +125,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
               if (exerciseName == null) {
                 saveNewExercise();
               } else {
-                saveEditedExercise(exerciseName);
+                saveEditedExercise(exerciseName, sets!);
               }
             },
             child: const Text('Save'),
@@ -159,16 +137,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   void saveNewExercise() {
     String newExerciseName = exerciseNameController.text;
-    double weight = double.parse(weightController.text);
     int sets = int.parse(setsController.text);
-    int reps = int.parse(repsController.text);
 
-    Provider.of<WorkoutData>(context, listen: false).addExercise(
+    Provider.of<WorkoutData>(context, listen: false).addNewExercise(
       widget.workoutName,
       newExerciseName,
-      weight,
       sets,
-      reps,
     );
 
     Navigator.pop(context);
@@ -178,7 +152,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     repsController.clear();
   }
 
-  void cancelExercise() {
+  void cancelEdit() {
     Navigator.pop(context);
     exerciseNameController.clear();
     weightController.clear();
@@ -186,18 +160,82 @@ class _WorkoutPageState extends State<WorkoutPage> {
     repsController.clear();
   }
 
-  void saveEditedExercise(String originalExerciseName) {
+  void saveEditedExercise(String originalExerciseName, int originalNoOfSets) {
     String editedExerciseName = exerciseNameController.text;
-    double weight = double.parse(weightController.text);
-    int sets = int.parse(setsController.text);
-    int reps = int.parse(repsController.text);
+    int editedNoOfSets = int.parse(setsController.text);
 
     Provider.of<WorkoutData>(context, listen: false).editExercise(
       widget.workoutName,
       originalExerciseName,
       editedExerciseName,
+      originalNoOfSets,
+      editedNoOfSets,
+    );
+
+    Navigator.pop(context);
+    exerciseNameController.clear();
+    weightController.clear();
+    setsController.clear();
+    repsController.clear();
+  }
+
+  void showSetDetailsDialog(
+    String exerciseName,
+    int setNumber,
+    Map<int, dynamic> setDetails,
+  ) {
+    double? weight = setDetails[setNumber][0];
+    int? reps = setDetails[setNumber][1];
+
+    weightController.text = weight?.toString() ?? '';
+    repsController.text = reps?.toString() ?? '';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Edit Set $setNumber Details',
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: weightController,
+              decoration: const InputDecoration(hintText: "Weight"),
+            ),
+            TextField(
+              controller: repsController,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(hintText: "Reps"),
+            ),
+          ],
+        ),
+        actions: [
+          MaterialButton(
+            onPressed: () => cancelEdit(),
+            child: const Text('Cancel'),
+          ),
+          MaterialButton(
+            onPressed: () {
+              saveEditedSet(exerciseName, setNumber);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void saveEditedSet(String exerciseName, int setNumber) {
+    double weight = double.parse(weightController.text);
+    int reps = int.parse(repsController.text);
+
+    Provider.of<WorkoutData>(context, listen: false).editSet(
+      widget.workoutName,
+      exerciseName,
+      setNumber,
       weight,
-      sets,
       reps,
     );
 

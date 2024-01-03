@@ -2,22 +2,20 @@ import 'package:flutter/material.dart';
 
 class ExerciseTile extends StatelessWidget {
   final String exerciseName;
-  final double weight;
-  final int sets;
-  final int reps;
+  final List<Map<String, dynamic>> setsList;
   final bool isCompleted;
   final void Function(bool) onCheckboxChanged;
-  final void Function(String?) onTilePressed;
+  final void Function(String?) onTileLongPressed;
+  final void Function(String, int) onEditSet;
   final void Function() onDismissed;
 
   const ExerciseTile({
     required this.exerciseName,
-    required this.weight,
-    required this.sets,
-    required this.reps,
+    required this.setsList,
     required this.isCompleted,
     required this.onCheckboxChanged,
-    required this.onTilePressed,
+    required this.onTileLongPressed,
+    required this.onEditSet,
     required this.onDismissed,
     super.key,
   });
@@ -41,30 +39,28 @@ class ExerciseTile extends StatelessWidget {
       onDismissed: (direction) => onDismissed(),
       child: ListTile(
         title: Text(exerciseName),
-        subtitle: Row(
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Chip(
-              label: Text(
-                "${weight.toString()} KG",
+            for (var setEntry in setsList)
+              Row(
+                children: [
+                  Text('Set ${setEntry['set'].toString()}: '),
+                  Text(
+                      '${setEntry['weight'].toString()} KG, ${setEntry['reps'].toString()} Reps'),
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => onEditSet(exerciseName, setEntry['set']),
+                  ),
+                ],
               ),
-            ),
-            Chip(
-              label: Text(
-                "${sets.toString()} Sets",
-              ),
-            ),
-            Chip(
-              label: Text(
-                "${reps.toString()} Reps",
-              ),
-            ),
           ],
         ),
         trailing: Checkbox(
           value: isCompleted,
           onChanged: (value) => onCheckboxChanged(value!),
         ),
-        onTap: () => onTilePressed(exerciseName),
+        onLongPress: () => onTileLongPressed(exerciseName),
       ),
     );
   }

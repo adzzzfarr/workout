@@ -14,6 +14,15 @@ void main() async {
   runApp(const MyApp());
 }
 
+// Use this after any changes to backend logic. Call await.clearHiveDatabase() before registering TypeAdapters. This deletes all data in the box.
+// Alternatively, delete the app from the emulator, then run flutter clean and flutter pub get. Then call flutter run.
+Future<void> clearHiveDatabase() async {
+  var box = await Hive.openBox('workout-database');
+  await box.clear();
+  await box.close();
+  Hive.deleteFromDisk();
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
