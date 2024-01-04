@@ -179,6 +179,28 @@ class WorkoutData extends ChangeNotifier {
     db.saveToDatabase(workoutList);
   }
 
+  void addExerciseAtIndex(String workoutName, Exercise exercise, int index) {
+    Workout intendedWorkout = getIntendedWorkout(workoutName);
+    intendedWorkout.exercises.insert(index, exercise);
+
+    notifyListeners();
+    db.saveToDatabase(workoutList);
+  }
+
+  void deleteWorkout(String workoutName) {
+    workoutList.removeWhere((workout) => workout.name == workoutName);
+
+    notifyListeners();
+    db.saveToDatabase(workoutList);
+  }
+
+  void addWorkoutAtIndex(Workout workout, int index) {
+    workoutList.insert(index, workout);
+
+    notifyListeners();
+    db.saveToDatabase(workoutList);
+  }
+
   Workout getIntendedWorkout(String workoutName) {
     return workoutList.firstWhere((element) => element.name == workoutName);
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/workout_data.dart';
+import 'package:workout/models/exercise.dart';
 import 'package:workout/widgets/exercise_tile.dart';
 
 class WorkoutPage extends StatefulWidget {
@@ -32,52 +33,71 @@ class _WorkoutPageState extends State<WorkoutPage> {
           ),
           child: const Icon(Icons.add),
         ),
-        body: ListView.builder(
-          itemCount: value.getNumberOfExercises(widget.workoutName),
-          itemBuilder: (context, index) => ExerciseTile(
-            exerciseName: value
-                .getIntendedWorkout(widget.workoutName)
-                .exercises[index]
-                .name,
-            setsList: value
-                .getIntendedWorkout(widget.workoutName)
-                .exercises[index]
-                .getSetsList(),
-            isCompleted: value
-                .getIntendedWorkout(widget.workoutName)
-                .exercises[index]
-                .isCompleted,
-            onEditSet: (exerciseName, setNumber) => showSetDetailsDialog(
-              exerciseName,
-              setNumber,
-              {
-                setNumber: value
+        body: Builder(
+          builder: (context) => ListView.builder(
+            itemCount: value.getNumberOfExercises(widget.workoutName),
+            itemBuilder: (context, index) => Builder(
+              builder: (context) => ExerciseTile(
+                exerciseName: value
                     .getIntendedWorkout(widget.workoutName)
                     .exercises[index]
-                    .setWeightReps[setNumber]
-              },
-            ),
-            onCheckboxChanged: (val) => onCheckBoxChanged(
-              widget.workoutName,
-              value
-                  .getIntendedWorkout(widget.workoutName)
-                  .exercises[index]
-                  .name,
-            ),
-            onTileLongPressed: (exerciseName) => showExerciseDetailsDialog(
-              exerciseName: exerciseName,
-              sets: value
-                  .getIntendedWorkout(widget.workoutName)
-                  .exercises[index]
-                  .setWeightReps
-                  .length,
-            ),
-            onDismissed: () => deleteExercise(
-              widget.workoutName,
-              value
-                  .getIntendedWorkout(widget.workoutName)
-                  .exercises[index]
-                  .name,
+                    .name,
+                setsList: value
+                    .getIntendedWorkout(widget.workoutName)
+                    .exercises[index]
+                    .getSetsList(),
+                isCompleted: value
+                    .getIntendedWorkout(widget.workoutName)
+                    .exercises[index]
+                    .isCompleted,
+                onEditSet: (exerciseName, setNumber) => showSetDetailsDialog(
+                  exerciseName,
+                  setNumber,
+                  {
+                    setNumber: value
+                        .getIntendedWorkout(widget.workoutName)
+                        .exercises[index]
+                        .setWeightReps[setNumber]
+                  },
+                ),
+                onCheckboxChanged: (val) => onCheckBoxChanged(
+                  widget.workoutName,
+                  value
+                      .getIntendedWorkout(widget.workoutName)
+                      .exercises[index]
+                      .name,
+                ),
+                onTileLongPressed: (exerciseName) => showExerciseDetailsDialog(
+                  exerciseName: exerciseName,
+                  sets: value
+                      .getIntendedWorkout(widget.workoutName)
+                      .exercises[index]
+                      .setWeightReps
+                      .length,
+                ),
+                onDismissed: () {
+                  Exercise deletedExercise = value
+                      .getIntendedWorkout(widget.workoutName)
+                      .exercises[index];
+                  int deletedExerciseIndex = index;
+
+                  deleteExercise(widget.workoutName, deletedExercise.name);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${deletedExercise.name} deleted.'),
+                      action: SnackBarAction(
+                        label: 'Undo',
+                        onPressed: () => undoDeleteExericse(
+                          widget.workoutName,
+                          deletedExercise,
+                          deletedExerciseIndex,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -251,5 +271,11 @@ class _WorkoutPageState extends State<WorkoutPage> {
       workoutName,
       exerciseName,
     );
+  }
+
+  void undoDeleteExericse(String workoutName, Exercise deletedExerciseName,
+      int deletedExerciseIndex) {
+    Provider.of<WorkoutData>(context, listen: false).addExerciseAtIndex(
+        workoutName, deletedExerciseName, deletedExerciseIndex);
   }
 }

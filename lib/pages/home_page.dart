@@ -4,6 +4,8 @@ import 'package:workout/data/workout_data.dart';
 import 'package:workout/pages/workout_page.dart';
 import 'package:workout/widgets/heat_map.dart';
 
+import '../models/workout.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -32,26 +34,49 @@ class _HomePageState extends State<HomePage> {
           onPressed: createNewWorkout,
           child: const Icon(Icons.add),
         ),
-        body: ListView(
-          children: [
-            WorkoutHeatMap(
-              datasets: value.heatMapDataSet,
-              startDateYYYYMMDD: value.getStartDate(),
-            ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: value.getWorkoutList().length,
-              itemBuilder: (context, index) => ListTile(
-                title: Text(value.getWorkoutList()[index].name),
-                trailing: IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios),
-                  onPressed: () =>
-                      goToWorkoutPage(value.getWorkoutList()[index].name),
+        body: Builder(
+          builder: (context) => ListView(
+            children: [
+              WorkoutHeatMap(
+                datasets: value.heatMapDataSet,
+                startDateYYYYMMDD: value.getStartDate(),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: value.getWorkoutList().length,
+                itemBuilder: (context, index) => Builder(
+                  builder: (context) => Dismissible(
+                    key: Key(value.workoutList[index].name),
+                    onDismissed: (direction) {
+                      Workout deletedWorkout = value.workoutList[index];
+                      int deletedWorkoutIndex = index;
+
+                      deleteWorkout(deletedWorkout.name);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${deletedWorkout.name} deleted.'),
+                          action: SnackBarAction(
+                            label: 'Undo',
+                            onPressed: () => undoDeleteWorkout(
+                                deletedWorkout, deletedWorkoutIndex),
+                          ),
+                        ),
+                      );
+                    },
+                    child: ListTile(
+                      title: Text(value.getWorkoutList()[index].name),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios),
+                        onPressed: () =>
+                            goToWorkoutPage(value.getWorkoutList()[index].name),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -92,6 +117,15 @@ class _HomePageState extends State<HomePage> {
   void cancelNewWorkout() {
     Navigator.pop(context);
     newWorkoutNameController.clear();
+  }
+
+  void deleteWorkout(String workoutName) {
+    Provider.of<WorkoutData>(context, listen: false).deleteWorkout(workoutName);
+  }
+
+  void undoDeleteWorkout(Workout deletedWorkout, int deletedWorkoutIndex) {
+    Provider.of<WorkoutData>(context, listen: false)
+        .addWorkoutAtIndex(deletedWorkout, deletedWorkoutIndex);
   }
 
   void goToWorkoutPage(String workoutName) {
