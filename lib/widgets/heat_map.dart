@@ -4,18 +4,23 @@ import 'package:workout/data/date_time.dart';
 
 class WorkoutHeatMap extends StatelessWidget {
   final Map<DateTime, int>? datasets;
-  final String startDateYYYYMMDD;
 
-  const WorkoutHeatMap(
-      {required this.datasets, required this.startDateYYYYMMDD, super.key});
+  const WorkoutHeatMap({required this.datasets, super.key});
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    const spacing = 4.0;
+
+    DateTime now = DateTime.now();
+    DateTime startDate = getFirstDayOfMonth(now);
+    DateTime endDate = getLastDayOfMonth(now);
+
     return Container(
       padding: const EdgeInsets.all(25),
       child: HeatMap(
-        startDate: createDateTimeObj(startDateYYYYMMDD),
-        endDate: DateTime.now().add(const Duration(days: 0)),
+        startDate: startDate,
+        endDate: endDate,
         datasets: datasets,
         colorMode: ColorMode.color,
         defaultColor: Colors.grey[200],
@@ -29,5 +34,13 @@ class WorkoutHeatMap extends StatelessWidget {
         },
       ),
     );
+  }
+
+  DateTime getFirstDayOfMonth(DateTime date) {
+    return DateTime(date.year, date.month, 1);
+  }
+
+  DateTime getLastDayOfMonth(DateTime date) {
+    return DateTime(date.year, date.month + 1, 0);
   }
 }

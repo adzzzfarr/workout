@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:workout/data/workout_data.dart';
+import 'package:workout/data/date_time.dart';
+import 'package:workout/data/performed_workout_data.dart';
+import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/exercise.dart';
+import 'package:workout/models/performed_workout.dart';
+import 'package:workout/models/template_workout.dart';
+import 'package:workout/pages/performed_workout_page.dart';
 import 'package:workout/widgets/exercise_tile.dart';
 
-class WorkoutPage extends StatefulWidget {
+class TemplateWorkoutPage extends StatefulWidget {
   final String workoutName;
 
-  const WorkoutPage({required this.workoutName, super.key});
+  const TemplateWorkoutPage({required this.workoutName, super.key});
 
   @override
-  State<WorkoutPage> createState() => _WorkoutPageState();
+  State<TemplateWorkoutPage> createState() => _TemplateWorkoutPageState();
 }
 
-class _WorkoutPageState extends State<WorkoutPage> {
+class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
   final exerciseNameController = TextEditingController();
   final weightController = TextEditingController();
   final setsController = TextEditingController();
@@ -21,10 +26,19 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WorkoutData>(
+    return Consumer<TemplateWorkoutData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
           title: Text(widget.workoutName),
+          actions: [
+            MaterialButton(
+              onPressed: () => goToPerformedWorkoutPage(
+                value.templateWorkoutList.firstWhere(
+                    (element) => element.name == widget.workoutName),
+              ),
+              child: const Text('Start'),
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => showExerciseDetailsDialog(
@@ -38,46 +52,30 @@ class _WorkoutPageState extends State<WorkoutPage> {
             itemCount: value.getNumberOfExercises(widget.workoutName),
             itemBuilder: (context, index) => Builder(
               builder: (context) => ExerciseTile(
+                workoutType: 'template',
                 exerciseName: value
-                    .getIntendedWorkout(widget.workoutName)
+                    .getIntendedTemplateWorkout(widget.workoutName)
                     .exercises[index]
                     .name,
                 setsList: value
-                    .getIntendedWorkout(widget.workoutName)
+                    .getIntendedTemplateWorkout(widget.workoutName)
                     .exercises[index]
                     .getSetsList(),
-                isCompleted: value
-                    .getIntendedWorkout(widget.workoutName)
-                    .exercises[index]
-                    .isCompleted,
-                onEditSet: (exerciseName, setNumber) => showSetDetailsDialog(
-                  exerciseName,
-                  setNumber,
-                  {
-                    setNumber: value
-                        .getIntendedWorkout(widget.workoutName)
-                        .exercises[index]
-                        .setWeightReps[setNumber]
-                  },
-                ),
-                onCheckboxChanged: (val) => onCheckBoxChanged(
-                  widget.workoutName,
-                  value
-                      .getIntendedWorkout(widget.workoutName)
-                      .exercises[index]
-                      .name,
-                ),
-                onTileLongPressed: (exerciseName) => showExerciseDetailsDialog(
+                isCompleted:
+                    false, // Don't need to care about isCompleted for exercises in a TemplateWorkout
+                onCheckboxChanged: null,
+                onEditSet: null,
+                onTilePressed: (exerciseName) => showExerciseDetailsDialog(
                   exerciseName: exerciseName,
                   sets: value
-                      .getIntendedWorkout(widget.workoutName)
+                      .getIntendedTemplateWorkout(widget.workoutName)
                       .exercises[index]
                       .setWeightReps
                       .length,
                 ),
                 onDismissed: () {
                   Exercise deletedExercise = value
-                      .getIntendedWorkout(widget.workoutName)
+                      .getIntendedTemplateWorkout(widget.workoutName)
                       .exercises[index];
                   int deletedExerciseIndex = index;
 
@@ -103,11 +101,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
         ),
       ),
     );
-  }
-
-  void onCheckBoxChanged(String workoutName, String exerciseName) {
-    Provider.of<WorkoutData>(context, listen: false)
-        .checkOffExercise(workoutName, exerciseName);
   }
 
   void showExerciseDetailsDialog({
@@ -159,7 +152,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     String newExerciseName = exerciseNameController.text;
     int sets = int.parse(setsController.text);
 
-    Provider.of<WorkoutData>(context, listen: false).addNewExercise(
+    Provider.of<TemplateWorkoutData>(context, listen: false).addNewExercise(
       widget.workoutName,
       newExerciseName,
       sets,
@@ -184,7 +177,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     String editedExerciseName = exerciseNameController.text;
     int editedNoOfSets = int.parse(setsController.text);
 
-    Provider.of<WorkoutData>(context, listen: false).editExercise(
+    Provider.of<TemplateWorkoutData>(context, listen: false).editExercise(
       widget.workoutName,
       originalExerciseName,
       editedExerciseName,
@@ -199,75 +192,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
     repsController.clear();
   }
 
-  void showSetDetailsDialog(
-    String exerciseName,
-    int setNumber,
-    Map<int, dynamic> setDetails,
-  ) {
-    double? weight = setDetails[setNumber][0];
-    int? reps = setDetails[setNumber][1];
-
-    weightController.text = weight?.toString() ?? '';
-    repsController.text = reps?.toString() ?? '';
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Edit Set $setNumber Details',
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: weightController,
-              decoration: const InputDecoration(hintText: "Weight"),
-            ),
-            TextField(
-              controller: repsController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(hintText: "Reps"),
-            ),
-          ],
-        ),
-        actions: [
-          MaterialButton(
-            onPressed: () => cancelEdit(),
-            child: const Text('Cancel'),
-          ),
-          MaterialButton(
-            onPressed: () {
-              saveEditedSet(exerciseName, setNumber);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void saveEditedSet(String exerciseName, int setNumber) {
-    double weight = double.parse(weightController.text);
-    int reps = int.parse(repsController.text);
-
-    Provider.of<WorkoutData>(context, listen: false).editSet(
-      widget.workoutName,
-      exerciseName,
-      setNumber,
-      weight,
-      reps,
-    );
-
-    Navigator.pop(context);
-    exerciseNameController.clear();
-    weightController.clear();
-    setsController.clear();
-    repsController.clear();
-  }
-
   void deleteExercise(String workoutName, String exerciseName) {
-    Provider.of<WorkoutData>(context, listen: false).deleteExercise(
+    Provider.of<TemplateWorkoutData>(context, listen: false).deleteExercise(
       workoutName,
       exerciseName,
     );
@@ -275,7 +201,27 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   void undoDeleteExericse(String workoutName, Exercise deletedExerciseName,
       int deletedExerciseIndex) {
-    Provider.of<WorkoutData>(context, listen: false).addExerciseAtIndex(
+    Provider.of<TemplateWorkoutData>(context, listen: false).addExerciseAtIndex(
         workoutName, deletedExerciseName, deletedExerciseIndex);
+  }
+
+  void goToPerformedWorkoutPage(TemplateWorkout templateWorkout) {
+    PerformedWorkout performedWorkout = PerformedWorkout(
+      name: templateWorkout.name,
+      exercises: List.from(templateWorkout.exercises),
+      date: createDateTimeObj(getTodayYYYYMMDD()),
+      duration: 100, // Change this
+    );
+
+    Provider.of<PerformedWorkoutData>(context, listen: false)
+        .startPerformingWorkout(performedWorkout);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            PerformedWorkoutPage(performedWorkout: performedWorkout),
+      ),
+    );
   }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:workout/data/workout_data.dart';
-import 'package:workout/pages/workout_page.dart';
+import 'package:workout/data/date_time.dart';
+import 'package:workout/data/performed_workout_data.dart';
+import 'package:workout/data/template_workout_data.dart';
+import 'package:workout/pages/template_workout_page.dart';
 import 'package:workout/widgets/heat_map.dart';
 
-import '../models/workout.dart';
+import '../models/template_workout.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,58 +20,71 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    Provider.of<WorkoutData>(context, listen: false).initialiseWorkoutList();
+    Provider.of<TemplateWorkoutData>(context, listen: false)
+        .initialiseTemplateWorkoutList();
+    Provider.of<PerformedWorkoutData>(context, listen: false)
+        .initialiseCompletedWorkoutList();
+    Provider.of<PerformedWorkoutData>(context, listen: false).loadHeatMap();
   }
 
-  final newWorkoutNameController = TextEditingController();
+  final newTemplateWorkoutNameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WorkoutData>(
+    return Consumer<TemplateWorkoutData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
           title: const Text('Workout Tracker'),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: createNewWorkout,
+          onPressed: createNewTemplateWorkout,
           child: const Icon(Icons.add),
         ),
         body: Builder(
           builder: (context) => ListView(
             children: [
-              WorkoutHeatMap(
-                datasets: value.heatMapDataSet,
-                startDateYYYYMMDD: value.getStartDate(),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    WorkoutHeatMap(
+                      datasets: Provider.of<PerformedWorkoutData>(context)
+                          .heatMapDataSet,
+                    ),
+                    const Text('View Workout History'),
+                  ],
+                ),
               ),
               ListView.builder(
                 shrinkWrap: true,
-                itemCount: value.getWorkoutList().length,
+                itemCount: value.getTemplateWorkoutList().length,
                 itemBuilder: (context, index) => Builder(
                   builder: (context) => Dismissible(
-                    key: Key(value.workoutList[index].name),
+                    key: Key(value.templateWorkoutList[index].name),
                     onDismissed: (direction) {
-                      Workout deletedWorkout = value.workoutList[index];
+                      TemplateWorkout deletedWorkout =
+                          value.templateWorkoutList[index];
                       int deletedWorkoutIndex = index;
 
-                      deleteWorkout(deletedWorkout.name);
+                      deleteTemplateWorkout(deletedWorkout.name);
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('${deletedWorkout.name} deleted.'),
                           action: SnackBarAction(
                             label: 'Undo',
-                            onPressed: () => undoDeleteWorkout(
+                            onPressed: () => undoDeleteTemplateWorkout(
                                 deletedWorkout, deletedWorkoutIndex),
                           ),
                         ),
                       );
                     },
                     child: ListTile(
-                      title: Text(value.getWorkoutList()[index].name),
+                      title: Text(value.getTemplateWorkoutList()[index].name),
                       trailing: IconButton(
                         icon: const Icon(Icons.arrow_forward_ios),
-                        onPressed: () =>
-                            goToWorkoutPage(value.getWorkoutList()[index].name),
+                        onPressed: () => goToTemplateWorkoutPage(
+                            value.getTemplateWorkoutList()[index].name),
                       ),
                     ),
                   ),
@@ -82,13 +97,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void createNewWorkout() {
+  void createNewTemplateWorkout() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("New Workout"),
         content: TextField(
-          controller: newWorkoutNameController,
+          controller: newTemplateWorkoutNameController,
           decoration: const InputDecoration(hintText: 'Workout Name'),
         ),
         actions: [
@@ -97,7 +112,7 @@ class _HomePageState extends State<HomePage> {
             child: const Text('Cancel'),
           ),
           MaterialButton(
-            onPressed: saveNewWorkout,
+            onPressed: saveNewTemplateWorkout,
             child: const Text('Save'),
           ),
         ],
@@ -105,34 +120,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void saveNewWorkout() {
-    String newWorkoutName = newWorkoutNameController.text;
+  void saveNewTemplateWorkout() {
+    String newWorkoutName = newTemplateWorkoutNameController.text;
 
-    Provider.of<WorkoutData>(context, listen: false).addWorkout(newWorkoutName);
+    Provider.of<TemplateWorkoutData>(context, listen: false)
+        .addWorkout(newWorkoutName);
 
     Navigator.pop(context);
-    newWorkoutNameController.clear();
+    newTemplateWorkoutNameController.clear();
   }
 
   void cancelNewWorkout() {
     Navigator.pop(context);
-    newWorkoutNameController.clear();
+    newTemplateWorkoutNameController.clear();
   }
 
-  void deleteWorkout(String workoutName) {
-    Provider.of<WorkoutData>(context, listen: false).deleteWorkout(workoutName);
+  void deleteTemplateWorkout(String workoutName) {
+    Provider.of<TemplateWorkoutData>(context, listen: false)
+        .deleteWorkout(workoutName);
   }
 
-  void undoDeleteWorkout(Workout deletedWorkout, int deletedWorkoutIndex) {
-    Provider.of<WorkoutData>(context, listen: false)
+  void undoDeleteTemplateWorkout(
+      TemplateWorkout deletedWorkout, int deletedWorkoutIndex) {
+    Provider.of<TemplateWorkoutData>(context, listen: false)
         .addWorkoutAtIndex(deletedWorkout, deletedWorkoutIndex);
   }
 
-  void goToWorkoutPage(String workoutName) {
+  void goToTemplateWorkoutPage(String workoutName) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => WorkoutPage(workoutName: workoutName),
+        builder: (context) => TemplateWorkoutPage(workoutName: workoutName),
       ),
     );
   }
