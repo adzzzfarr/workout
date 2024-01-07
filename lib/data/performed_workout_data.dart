@@ -13,6 +13,9 @@ class PerformedWorkoutData extends ChangeNotifier {
   // We only need to initialise completed workouts for display in Workout History
   // because we do not need to display uncompleted ones
   void initialiseCompletedWorkoutList() {
+    db.savePerformedWorkoutsToDatabase([]);
+    // Empties performedWorkoutList if navigated from PerformedWorkoutPage
+
     if (db.prevDataExists()) {
       completedWorkoutList = db.readCompletedWorkoutsFromDatabase();
     } else {
@@ -81,10 +84,8 @@ class PerformedWorkoutData extends ChangeNotifier {
     }
 
     completedWorkoutList.add(intendedWorkout);
-    performedWorkoutList.remove(intendedWorkout);
 
     notifyListeners();
-    db.savePerformedWorkoutsToDatabase(performedWorkoutList);
     db.saveCompletedWorkoutsToDatabase(completedWorkoutList);
 
     loadHeatMap();
