@@ -58,6 +58,16 @@ class HiveDatabase {
     completedWorkouts.sort(
       (a, b) => b.date.compareTo(a.date),
     );
+
+    List names = [];
+    List durations = [];
+    for (var element in completedWorkouts) {
+      names.add(element.name);
+      durations.add(element.duration);
+    }
+
+    print(
+        'I am saving these completed workouts: $names with corresponding durations: $durations');
     myBox.put("COMPLETED_WORKOUTS", completedWorkouts);
   }
 
@@ -101,12 +111,15 @@ class HiveDatabase {
 
     List names = [];
     List dates = [];
+    List durations = [];
     for (var element in completedWorkouts) {
       names.add(element.name);
+      durations.add(element.duration);
       dates.add(dateTimeToYYYYMMDD(element.date));
     }
 
-    print('I am reading these CompletedWorkouts: $names');
+    print(
+        'I am reading these CompletedWorkouts: $names with corresponding durations: $durations');
 
     for (var date in dates) {
       print('COMPLETION STATUS for  $date: ${getCompletionStatus(date)}');

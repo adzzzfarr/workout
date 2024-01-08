@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/performed_workout_data.dart';
@@ -19,6 +21,15 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
   final setsController = TextEditingController();
   final repsController = TextEditingController();
 
+  Duration workoutDuration = const Duration();
+  Timer? workoutTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    startWorkoutTimer();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<PerformedWorkoutData>(
@@ -30,50 +41,100 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
           onPressed: () => finishWorkout(),
           child: const Text('Finish'),
         ),
-        body: Builder(
-          builder: (context) => ListView.builder(
-            itemCount: value.getNumberOfExercises(widget.performedWorkout.date),
-            itemBuilder: (context, index) => Builder(
-              builder: (context) => ExerciseTile(
-                workoutType: 'performed',
-                exerciseName: value
-                    .getIntendedPerformedWorkout(widget.performedWorkout.date)!
-                    .exercises[index]
-                    .name,
-                setsList: value
-                    .getIntendedPerformedWorkout(widget.performedWorkout.date)!
-                    .exercises[index]
-                    .getSetsList(),
-                isCompleted: value
-                    .getIntendedPerformedWorkout(widget.performedWorkout.date)!
-                    .exercises[index]
-                    .isCompleted,
-                onEditSet: (exerciseName, setNumber) => showSetDetailsDialog(
-                  exerciseName,
-                  setNumber,
-                  {
-                    setNumber: value
-                        .getIntendedPerformedWorkout(
-                            widget.performedWorkout.date)!
-                        .exercises[index]
-                        .setWeightReps[setNumber]
-                  },
-                ),
-                onCheckboxChanged: (value) {
-                  setState(() {
-                    widget.performedWorkout.exercises[index].isCompleted =
-                        !widget.performedWorkout.exercises[index].isCompleted;
-                  });
-                },
-                onTilePressed: null,
-                onDismissed:
-                    null, // Cannot delete exercises in a performed workout
+        body: Builder(builder: (context) {
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: displayWorkoutTimer(),
               ),
-            ),
-          ),
-        ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: value.getNumberOfExercises(
+                      widget.performedWorkout.date,
+                      widget.performedWorkout.name),
+                  itemBuilder: (context, index) => Builder(
+                    builder: (context) => ExerciseTile(
+                      workoutType: 'performed',
+                      exerciseName: value
+                          .getIntendedPerformedWorkout(
+                              widget.performedWorkout.date,
+                              widget.performedWorkout.name)!
+                          .exercises[index]
+                          .name,
+                      setsList: value
+                          .getIntendedPerformedWorkout(
+                              widget.performedWorkout.date,
+                              widget.performedWorkout.name)!
+                          .exercises[index]
+                          .getSetsList(),
+                      isCompleted: value
+                          .getIntendedPerformedWorkout(
+                              widget.performedWorkout.date,
+                              widget.performedWorkout.name)!
+                          .exercises[index]
+                          .isCompleted,
+                      onEditSet: (exerciseName, setNumber) =>
+                          showSetDetailsDialog(
+                        exerciseName,
+                        setNumber,
+                        {
+                          setNumber: value
+                              .getIntendedPerformedWorkout(
+                                  widget.performedWorkout.date,
+                                  widget.performedWorkout.name)!
+                              .exercises[index]
+                              .setWeightReps[setNumber]
+                        },
+                      ),
+                      onCheckboxChanged: (value) {
+                        setState(() {
+                          widget.performedWorkout.exercises[index].isCompleted =
+                              !widget.performedWorkout.exercises[index]
+                                  .isCompleted;
+                        });
+                      },
+                      onTilePressed: null,
+                      onDismissed:
+                          null, // Cannot delete exercises in a performed workout
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
       ),
     );
+  }
+
+  Widget displayWorkoutTimer() {
+    String twoDigits(int number) => number.toString().padLeft(2, '0');
+    final minutes = twoDigits(workoutDuration.inMinutes.remainder(60));
+    final seconds = twoDigits(workoutDuration.inSeconds.remainder(60));
+
+    return Text('$minutes:$seconds');
+  }
+
+  void startWorkoutTimer() {
+    workoutTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (timer) => updateWorkoutDuration(),
+    );
+  }
+
+  void updateWorkoutDuration() {
+    setState(() {
+      final seconds = workoutDuration.inSeconds + 1;
+
+      workoutDuration = Duration(seconds: seconds);
+    });
+  }
+
+  void stopWorkoutTimer() {
+    widget.performedWorkout.duration = workoutDuration.inSeconds;
+    print(widget.performedWorkout.duration);
+    workoutTimer?.cancel();
   }
 
   void showSetDetailsDialog(
@@ -137,6 +198,7 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
 
     Provider.of<PerformedWorkoutData>(context, listen: false).editSet(
       widget.performedWorkout.date,
+      widget.performedWorkout.name,
       exerciseName,
       setNumber,
       weight,
@@ -150,8 +212,9 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
   }
 
   void finishWorkout() {
-    Provider.of<PerformedWorkoutData>(context, listen: false)
-        .finishWorkout(widget.performedWorkout.date);
+    stopWorkoutTimer();
+    Provider.of<PerformedWorkoutData>(context, listen: false).finishWorkout(
+        widget.performedWorkout.date, widget.performedWorkout.name);
 
     Navigator.pushAndRemoveUntil(
       context,

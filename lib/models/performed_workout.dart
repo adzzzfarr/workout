@@ -10,7 +10,7 @@ class PerformedWorkout extends TemplateWorkout {
   final DateTime date;
 
   @HiveField(4)
-  final int duration;
+  int duration;
 
   @HiveField(5)
   final bool isCompleted;

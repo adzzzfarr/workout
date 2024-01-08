@@ -27,9 +27,9 @@ class PerformedWorkoutData extends ChangeNotifier {
     return completedWorkoutList;
   }
 
-  int getNumberOfExercises(DateTime workoutDate) {
+  int getNumberOfExercises(DateTime workoutDate, String workoutName) {
     PerformedWorkout? intendedWorkout =
-        getIntendedPerformedWorkout(workoutDate);
+        getIntendedPerformedWorkout(workoutDate, workoutName);
 
     return intendedWorkout != null ? intendedWorkout.exercises.length : 0;
   }
@@ -41,13 +41,14 @@ class PerformedWorkoutData extends ChangeNotifier {
 
   void editSet(
     DateTime workoutDate,
+    String workoutName,
     String exerciseName,
     int setNumber,
     double editedWeight,
     int editedReps,
   ) {
     PerformedWorkout? intendedWorkout =
-        getIntendedPerformedWorkout(workoutDate);
+        getIntendedPerformedWorkout(workoutDate, workoutName);
 
     int exerciseIndex = intendedWorkout!.exercises
         .indexWhere((exercise) => exercise.name == exerciseName);
@@ -75,9 +76,9 @@ class PerformedWorkoutData extends ChangeNotifier {
   }
 
   // Called when 'Finish' is pressed
-  void finishWorkout(DateTime workoutDate) {
+  void finishWorkout(DateTime workoutDate, String workoutName) {
     PerformedWorkout? intendedWorkout =
-        getIntendedPerformedWorkout(workoutDate);
+        getIntendedPerformedWorkout(workoutDate, workoutName);
 
     for (var exercise in intendedWorkout!.exercises) {
       exercise.isCompleted = true;
@@ -130,18 +131,19 @@ class PerformedWorkoutData extends ChangeNotifier {
   }
 
   // Only used for editing set data, which is not done in completed workouts
-  PerformedWorkout? getIntendedPerformedWorkout(DateTime workoutDate) {
+  PerformedWorkout? getIntendedPerformedWorkout(
+      DateTime workoutDate, String workoutName) {
     PerformedWorkout? performedWorkout = performedWorkoutList.firstWhere(
-      (element) => element.date == workoutDate,
+      (element) => element.date == workoutDate && element.name == workoutName,
     );
 
     return performedWorkout;
   }
 
   Exercise getIntendedExerciseInPerformedWorkout(
-      DateTime workoutDate, String exerciseName) {
+      DateTime workoutDate, String workoutName, String exerciseName) {
     PerformedWorkout? intendedWorkout =
-        getIntendedPerformedWorkout(workoutDate);
+        getIntendedPerformedWorkout(workoutDate, workoutName);
 
     return intendedWorkout!.exercises
         .firstWhere((element) => element.name == exerciseName);

@@ -210,7 +210,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
       name: templateWorkout.name,
       exercises: List.from(templateWorkout.exercises),
       date: createDateTimeObj(getTodayYYYYMMDD()),
-      duration: 100, // Change this
+      duration: 0, // Change this
     );
 
     Provider.of<PerformedWorkoutData>(context, listen: false)
