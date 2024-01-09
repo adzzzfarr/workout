@@ -41,6 +41,7 @@ dependencies:
   flutter_heatmap_calendar: ^1.0.5
   build_runner: ^2.3.3
   hive_generator: ^2.0.1
+  bottom_drawer: ^0.0.5
 
 dev_dependencies:
   flutter_test:
