@@ -4,6 +4,7 @@ import 'package:workout/data/date_time.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/pages/template_workout_page.dart';
+import 'package:workout/pages/workout_history_page.dart';
 import 'package:workout/widgets/heat_map.dart';
 
 import '../models/template_workout.dart';
@@ -51,7 +52,10 @@ class _HomePageState extends State<HomePage> {
                       datasets: Provider.of<PerformedWorkoutData>(context)
                           .heatMapDataSet,
                     ),
-                    const Text('View Workout History'),
+                    MaterialButton(
+                      onPressed: () => goToWorkoutHistoryPage(),
+                      child: const Text('View Workout History'),
+                    ),
                   ],
                 ),
               ),
@@ -151,6 +155,15 @@ class _HomePageState extends State<HomePage> {
       context,
       MaterialPageRoute(
         builder: (context) => TemplateWorkoutPage(workoutName: workoutName),
+      ),
+    );
+  }
+
+  void goToWorkoutHistoryPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const WorkoutHistoryPage(),
       ),
     );
   }

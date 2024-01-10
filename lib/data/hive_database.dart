@@ -45,6 +45,7 @@ class HiveDatabase {
   void saveCompletedWorkoutsToDatabase(
       List<PerformedWorkout> performedWorkouts) {
     List<PerformedWorkout> completedWorkouts = [];
+
     for (var workout in performedWorkouts) {
       String yyyymmdd = dateTimeToYYYYMMDD(workout.date);
       if (allExercisesCompleted(workout)) {
@@ -63,7 +64,7 @@ class HiveDatabase {
     List durations = [];
     for (var element in completedWorkouts) {
       names.add(element.name);
-      durations.add(element.duration);
+      durations.add(element.durationInSeconds);
     }
 
     print(
@@ -114,7 +115,7 @@ class HiveDatabase {
     List durations = [];
     for (var element in completedWorkouts) {
       names.add(element.name);
-      durations.add(element.duration);
+      durations.add(element.durationInSeconds);
       dates.add(dateTimeToYYYYMMDD(element.date));
     }
 

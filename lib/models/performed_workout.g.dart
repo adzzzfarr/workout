@@ -20,7 +20,7 @@ class PerformedWorkoutAdapter extends TypeAdapter<PerformedWorkout> {
       name: fields[0] as String,
       exercises: (fields[1] as List).cast<Exercise>(),
       date: fields[3] as DateTime,
-      duration: fields[4] as int,
+      durationInSeconds: fields[4] as int,
       isCompleted: fields[5] as bool,
     );
   }
@@ -32,7 +32,7 @@ class PerformedWorkoutAdapter extends TypeAdapter<PerformedWorkout> {
       ..writeByte(3)
       ..write(obj.date)
       ..writeByte(4)
-      ..write(obj.duration)
+      ..write(obj.durationInSeconds)
       ..writeByte(5)
       ..write(obj.isCompleted)
       ..writeByte(0)

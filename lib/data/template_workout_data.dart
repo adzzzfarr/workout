@@ -7,7 +7,7 @@ class TemplateWorkoutData extends ChangeNotifier {
   final db = HiveDatabase();
 
   List<TemplateWorkout> templateWorkoutList = [
-    // default workouts
+    // default workout templates
     TemplateWorkout(
       name: "Upper Body",
       exercises: [

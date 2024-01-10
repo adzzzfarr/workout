@@ -20,9 +20,7 @@ class TemplateWorkoutPage extends StatefulWidget {
 
 class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
   final exerciseNameController = TextEditingController();
-  final weightController = TextEditingController();
   final setsController = TextEditingController();
-  final repsController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +59,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
                     .getIntendedTemplateWorkout(widget.workoutName)
                     .exercises[index]
                     .getSetsList(),
-                isCompleted:
-                    false, // Don't need to care about isCompleted for exercises in a TemplateWorkout
+                isCompleted: false,
                 onCheckboxChanged: null,
                 onEditSet: null,
                 onTilePressed: (exerciseName) => showExerciseDetailsDialog(
@@ -160,17 +157,13 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
 
     Navigator.pop(context);
     exerciseNameController.clear();
-    weightController.clear();
     setsController.clear();
-    repsController.clear();
   }
 
   void cancelEdit() {
     Navigator.pop(context);
     exerciseNameController.clear();
-    weightController.clear();
     setsController.clear();
-    repsController.clear();
   }
 
   void saveEditedExercise(String originalExerciseName, int originalNoOfSets) {
@@ -187,9 +180,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
 
     Navigator.pop(context);
     exerciseNameController.clear();
-    weightController.clear();
     setsController.clear();
-    repsController.clear();
   }
 
   void deleteExercise(String workoutName, String exerciseName) {
@@ -210,7 +201,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
       name: templateWorkout.name,
       exercises: List.from(templateWorkout.exercises),
       date: createDateTimeObj(getTodayYYYYMMDD()),
-      duration: 0, // Change this
+      durationInSeconds: 0, // Change this
     );
 
     Provider.of<PerformedWorkoutData>(context, listen: false)

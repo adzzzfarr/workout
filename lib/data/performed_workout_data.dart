@@ -27,7 +27,8 @@ class PerformedWorkoutData extends ChangeNotifier {
     return completedWorkoutList;
   }
 
-  int getNumberOfExercises(DateTime workoutDate, String workoutName) {
+  int getNumberOfExercisesInPerformedWorkout(
+      DateTime workoutDate, String workoutName) {
     PerformedWorkout? intendedWorkout =
         getIntendedPerformedWorkout(workoutDate, workoutName);
 
@@ -92,16 +93,29 @@ class PerformedWorkoutData extends ChangeNotifier {
     loadHeatMap();
   }
 
-  /* Alternatively, let each exercise be checked off manually
-  void checkOffExercise(DateTime workoutDate, String exerciseName) {
-    Exercise intendedExercise =
-        getIntendedExerciseInPerformedWorkout(workoutDate, exerciseName);
-    intendedExercise.isCompleted = !intendedExercise.isCompleted;
+  int getNumberOfExercisesInCompletedWorkout(
+      DateTime workoutDate, String workoutName) {
+    PerformedWorkout? intendedWorkout =
+        getIntendedCompletedWorkout(workoutDate, workoutName);
+
+    return intendedWorkout != null ? intendedWorkout.exercises.length : 0;
+  }
+
+  void deleteCompletedWorkout(String workoutName) {
+    completedWorkoutList.removeWhere((workout) => workout.name == workoutName);
 
     notifyListeners();
-    db.saveWorkoutsToDatabase(performedWorkoutList);
+    db.saveCompletedWorkoutsToDatabase(completedWorkoutList);
   }
-  */
+
+  // ONLY for undoing deletion of a completed workout
+  void addCompletedWorkoutAtIndex(
+      PerformedWorkout completedWorkout, int index) {
+    completedWorkoutList.insert(index, completedWorkout);
+
+    notifyListeners();
+    db.saveTemplateWorkoutsToDatabase(completedWorkoutList);
+  }
 
   Map<DateTime, int> heatMapDataSet = {};
 
@@ -147,5 +161,14 @@ class PerformedWorkoutData extends ChangeNotifier {
 
     return intendedWorkout!.exercises
         .firstWhere((element) => element.name == exerciseName);
+  }
+
+  PerformedWorkout? getIntendedCompletedWorkout(
+      DateTime workoutDate, String workoutName) {
+    PerformedWorkout? completedWorkout = completedWorkoutList.firstWhere(
+      (element) => element.date == workoutDate && element.name == workoutName,
+    );
+
+    return completedWorkout;
   }
 }

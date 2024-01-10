@@ -8,6 +8,8 @@ import 'package:workout/models/performed_workout.dart';
 import 'package:workout/pages/home_page.dart';
 import 'package:workout/widgets/exercise_tile.dart';
 
+// TODO: Handle WillPopScope
+
 class PerformedWorkoutPage extends StatefulWidget {
   final PerformedWorkout performedWorkout;
 
@@ -41,6 +43,7 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     return Consumer<PerformedWorkoutData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           title: Text(widget.performedWorkout.name),
           actions: [
             MaterialButton(
@@ -61,7 +64,7 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
                     ),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: value.getNumberOfExercises(
+                        itemCount: value.getNumberOfExercisesInPerformedWorkout(
                             widget.performedWorkout.date,
                             widget.performedWorkout.name),
                         itemBuilder: (context, index) => Builder(
@@ -214,10 +217,15 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
 
   Widget displayWorkoutTimer() {
     String twoDigits(int number) => number.toString().padLeft(2, '0');
+    final hours = twoDigits(workoutDuration.inHours);
     final minutes = twoDigits(workoutDuration.inMinutes.remainder(60));
     final seconds = twoDigits(workoutDuration.inSeconds.remainder(60));
 
-    return Text('$minutes:$seconds');
+    if (workoutDuration.inMinutes >= 60) {
+      return Text('$hours:$minutes:$seconds');
+    } else {
+      return Text('$minutes:$seconds');
+    }
   }
 
   void startWorkoutTimer() {
@@ -235,7 +243,7 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
   }
 
   void stopWorkoutTimer() {
-    widget.performedWorkout.duration = workoutDuration.inSeconds;
+    widget.performedWorkout.durationInSeconds = workoutDuration.inSeconds;
     workoutTimer?.cancel();
   }
 

@@ -42,19 +42,7 @@ class ExerciseTile extends StatelessWidget {
         onDismissed: (direction) => onDismissed!(),
         child: ListTile(
           title: Text(exerciseName),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var setEntry in setsList)
-                Row(
-                  children: [
-                    Text('Set ${setEntry['set'].toString()}: '),
-                    Text(
-                        '${setEntry['weight'].toString()} KG, ${setEntry['reps'].toString()} Reps'),
-                  ],
-                ),
-            ],
-          ),
+          subtitle: Text('${setsList.length} Sets'),
           onTap: () => onTilePressed!(exerciseName),
         ),
       );
@@ -82,6 +70,23 @@ class ExerciseTile extends StatelessWidget {
         trailing: Checkbox(
           value: isCompleted,
           onChanged: (value) => onCheckboxChanged!(value!),
+        ),
+      );
+    } else if (workoutType == 'completed') {
+      return ListTile(
+        title: Text(exerciseName),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var setEntry in setsList)
+              Row(
+                children: [
+                  Text('Set ${setEntry['set'].toString()}: '),
+                  Text(
+                      '${setEntry['weight'].toString()} KG, ${setEntry['reps'].toString()} Reps'),
+                ],
+              ),
+          ],
         ),
       );
     }
