@@ -5,7 +5,9 @@ import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/exercise.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/models/template_workout.dart';
-import 'package:workout/pages/home_page.dart';
+import 'package:workout/pages/dashboard_page.dart';
+import 'package:workout/pages/navigation_bar_page.dart';
+import 'package:workout/pages/template_workouts_list_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
@@ -42,7 +44,7 @@ class MyApp extends StatelessWidget {
       ],
       child: const MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: HomePage(),
+        home: NavigationBarPage(),
       ),
     );
   }

@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/models/performed_workout.dart';
-import 'package:workout/pages/home_page.dart';
+import 'package:workout/pages/navigation_bar_page.dart';
+import 'package:workout/pages/template_workouts_list_page.dart';
 import 'package:workout/widgets/exercise_tile.dart';
 
 // TODO: Handle WillPopScope
@@ -209,7 +210,7 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => const HomePage(),
+        builder: (context) => const NavigationBarPage(),
       ),
       (route) => false,
     );

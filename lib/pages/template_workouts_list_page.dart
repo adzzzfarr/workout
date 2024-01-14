@@ -9,23 +9,21 @@ import 'package:workout/widgets/heat_map.dart';
 
 import '../models/template_workout.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class TemplateWorkoutsListPage extends StatefulWidget {
+  const TemplateWorkoutsListPage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<TemplateWorkoutsListPage> createState() =>
+      _TemplateWorkoutsListPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _TemplateWorkoutsListPageState extends State<TemplateWorkoutsListPage> {
   @override
   void initState() {
     super.initState();
 
     Provider.of<TemplateWorkoutData>(context, listen: false)
         .initialiseTemplateWorkoutList();
-    Provider.of<PerformedWorkoutData>(context, listen: false)
-        .initialiseCompletedWorkoutList();
-    Provider.of<PerformedWorkoutData>(context, listen: false).loadHeatMap();
   }
 
   final newTemplateWorkoutNameController = TextEditingController();
@@ -44,21 +42,6 @@ class _HomePageState extends State<HomePage> {
         body: Builder(
           builder: (context) => ListView(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    WorkoutHeatMap(
-                      datasets: Provider.of<PerformedWorkoutData>(context)
-                          .heatMapDataSet,
-                    ),
-                    MaterialButton(
-                      onPressed: () => goToWorkoutHistoryPage(),
-                      child: const Text('View Workout History'),
-                    ),
-                  ],
-                ),
-              ),
               ListView.builder(
                 shrinkWrap: true,
                 itemCount: value.getTemplateWorkoutList().length,
@@ -155,15 +138,6 @@ class _HomePageState extends State<HomePage> {
       context,
       MaterialPageRoute(
         builder: (context) => TemplateWorkoutPage(workoutName: workoutName),
-      ),
-    );
-  }
-
-  void goToWorkoutHistoryPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const WorkoutHistoryPage(),
       ),
     );
   }
