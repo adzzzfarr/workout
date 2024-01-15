@@ -3,6 +3,8 @@ import 'package:workout/data/hive_database.dart';
 import 'package:workout/models/exercise.dart';
 import 'package:workout/models/template_workout.dart';
 
+import '../models/performed_workout.dart';
+
 class TemplateWorkoutData extends ChangeNotifier {
   final db = HiveDatabase();
 
@@ -167,6 +169,14 @@ class TemplateWorkoutData extends ChangeNotifier {
 
     notifyListeners();
     db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+  }
+
+  void updateTemplateWorkout(PerformedWorkout completedWorkout) {
+    TemplateWorkout intendedTemplateWorkout =
+        getIntendedTemplateWorkout(completedWorkout.name);
+
+    intendedTemplateWorkout = TemplateWorkout(
+        name: completedWorkout.name, exercises: completedWorkout.exercises);
   }
 
   TemplateWorkout getIntendedTemplateWorkout(String workoutName) {

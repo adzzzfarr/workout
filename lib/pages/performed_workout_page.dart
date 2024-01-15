@@ -4,6 +4,7 @@ import 'package:bottom_drawer/bottom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/performed_workout_data.dart';
+import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/pages/navigation_bar_page.dart';
 import 'package:workout/widgets/exercise_tile.dart';
@@ -192,6 +193,9 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     stopWorkoutTimer();
     Provider.of<PerformedWorkoutData>(context, listen: false).finishWorkout(
         widget.performedWorkout.date, widget.performedWorkout.name);
+
+    Provider.of<TemplateWorkoutData>(context, listen: false)
+        .updateTemplateWorkout(widget.performedWorkout);
 
     Navigator.pushAndRemoveUntil(
       context,
