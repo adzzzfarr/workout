@@ -16,7 +16,9 @@ class PerformedWorkoutData extends ChangeNotifier {
     db.savePerformedWorkoutsToDatabase([]);
     // Empties performedWorkoutList if navigated from PerformedWorkoutPage
 
-    if (db.prevDataExists()) {
+    if (db.prevDataExists() &&
+        db.myBox.get('COMPLETED_WORKOUTS') != null &&
+        (db.myBox.get('COMPLETED_WORKOUTS') as List).isNotEmpty) {
       completedWorkoutList = db.readCompletedWorkoutsFromDatabase();
     } else {
       db.saveCompletedWorkoutsToDatabase(completedWorkoutList);
@@ -65,6 +67,7 @@ class PerformedWorkoutData extends ChangeNotifier {
       Exercise editedExercise = Exercise(
         name: intendedExercise.name,
         setWeightReps: setWithEditedWeightReps,
+        bodyPart: intendedExercise.bodyPart,
         isCompleted: intendedExercise.isCompleted,
       );
 

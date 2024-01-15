@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../models/exercise.dart';
+
 class ExerciseTile extends StatelessWidget {
-  final dynamic workoutType;
+  final String workoutType;
+  final Exercise exercise;
+  /*
   final String exerciseName;
+  final BodyPart bodyPart;
   final List<Map<String, dynamic>> setsList;
   final bool isCompleted;
+  */
   final void Function(bool)? onCheckboxChanged;
   final void Function(String?)? onTilePressed;
   final void Function(String, int)? onEditSet;
@@ -12,9 +18,7 @@ class ExerciseTile extends StatelessWidget {
 
   const ExerciseTile({
     required this.workoutType,
-    required this.exerciseName,
-    required this.setsList,
-    required this.isCompleted,
+    required this.exercise,
     required this.onCheckboxChanged,
     required this.onTilePressed,
     required this.onEditSet,
@@ -26,7 +30,7 @@ class ExerciseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     if (workoutType == 'template') {
       return Dismissible(
-        key: Key(exerciseName),
+        key: Key(exercise.name),
         direction: DismissDirection.endToStart,
         background: Container(
           color: Colors.red,
@@ -41,19 +45,25 @@ class ExerciseTile extends StatelessWidget {
         ),
         onDismissed: (direction) => onDismissed!(),
         child: ListTile(
-          title: Text(exerciseName),
-          subtitle: Text('${setsList.length} Sets'),
-          onTap: () => onTilePressed!(exerciseName),
+          title: Text(exercise.name),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(exercise.getFormattedBodyPart(exercise.bodyPart)),
+              Text('${exercise.getSetsList().length} Sets'),
+            ],
+          ),
+          onTap: () => onTilePressed!(exercise.name),
         ),
       );
     } else if (workoutType == 'performed') {
       return ListTile(
-        title: Text(exerciseName),
-        tileColor: isCompleted ? Colors.green : null,
+        title: Text(exercise.name),
+        tileColor: exercise.isCompleted ? Colors.green : null,
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (var setEntry in setsList)
+            for (var setEntry in exercise.getSetsList())
               Row(
                 children: [
                   Text('Set ${setEntry['set'].toString()}: '),
@@ -61,24 +71,24 @@ class ExerciseTile extends StatelessWidget {
                       '${setEntry['weight'].toString()} KG, ${setEntry['reps'].toString()} Reps'),
                   IconButton(
                     icon: const Icon(Icons.edit),
-                    onPressed: () => onEditSet!(exerciseName, setEntry['set']),
+                    onPressed: () => onEditSet!(exercise.name, setEntry['set']),
                   ),
                 ],
               ),
           ],
         ),
         trailing: Checkbox(
-          value: isCompleted,
+          value: exercise.isCompleted,
           onChanged: (value) => onCheckboxChanged!(value!),
         ),
       );
     } else if (workoutType == 'completed') {
       return ListTile(
-        title: Text(exerciseName),
+        title: Text(exercise.name),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (var setEntry in setsList)
+            for (var setEntry in exercise.getSetsList())
               Row(
                 children: [
                   Text('Set ${setEntry['set'].toString()}: '),

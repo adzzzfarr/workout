@@ -5,9 +5,7 @@ import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/exercise.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/models/template_workout.dart';
-import 'package:workout/pages/dashboard_page.dart';
 import 'package:workout/pages/navigation_bar_page.dart';
-import 'package:workout/pages/template_workouts_list_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
@@ -25,6 +23,7 @@ Future<void> clearHiveDatabase() async {
   var box = await Hive.openBox('workout-database');
   await box.clear();
   await box.close();
+  Hive.deleteBoxFromDisk('workout-database');
   Hive.deleteFromDisk();
 }
 

@@ -18,6 +18,7 @@ class TemplateWorkoutData extends ChangeNotifier {
             2: [9.0, 9],
             3: [8.0, 8],
           },
+          bodyPart: BodyPart.chest,
         ),
       ],
     ),
@@ -31,13 +32,16 @@ class TemplateWorkoutData extends ChangeNotifier {
             2: [9.0, 9],
             3: [8.0, 8],
           },
+          bodyPart: BodyPart.legs,
         ),
       ],
     ),
   ];
 
   void initialiseTemplateWorkoutList() {
-    if (db.prevDataExists()) {
+    if (db.prevDataExists() &&
+        db.myBox.get('TEMPLATE_WORKOUTS') != null &&
+        (db.myBox.get('TEMPLATE_WORKOUTS') as List).isNotEmpty) {
       templateWorkoutList = db.readTemplateWorkoutsFromDatabase();
     } else {
       // Save the default workouts
@@ -71,6 +75,7 @@ class TemplateWorkoutData extends ChangeNotifier {
   void addNewExercise(
     String workoutName,
     String exerciseName,
+    BodyPart bodyPart,
     int sets,
   ) {
     TemplateWorkout intendedWorkout = getIntendedTemplateWorkout(workoutName);
@@ -85,6 +90,7 @@ class TemplateWorkoutData extends ChangeNotifier {
       Exercise(
         name: exerciseName,
         setWeightReps: setWeightReps,
+        bodyPart: bodyPart,
       ),
     );
 
@@ -98,6 +104,7 @@ class TemplateWorkoutData extends ChangeNotifier {
     String editedExerciseName,
     int originalNoOfSets,
     int editedNoOfSets,
+    BodyPart selectedBodyPart,
   ) {
     TemplateWorkout intendedWorkout = getIntendedTemplateWorkout(workoutName);
 
@@ -120,6 +127,7 @@ class TemplateWorkoutData extends ChangeNotifier {
       Exercise editedExercise = Exercise(
         name: editedExerciseName,
         setWeightReps: editedSetWeightReps,
+        bodyPart: selectedBodyPart,
         isCompleted: intendedWorkout.exercises[index].isCompleted,
       );
 

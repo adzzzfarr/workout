@@ -41,19 +41,11 @@ class _CompletedWorkoutPageState extends State<CompletedWorkoutPage> {
                         itemBuilder: (context, index) => Builder(
                           builder: (context) => ExerciseTile(
                             workoutType: 'completed',
-                            exerciseName: value
+                            exercise: value
                                 .getIntendedCompletedWorkout(
                                     widget.completedWorkout.date,
                                     widget.completedWorkout.name)!
-                                .exercises[index]
-                                .name,
-                            setsList: value
-                                .getIntendedCompletedWorkout(
-                                    widget.completedWorkout.date,
-                                    widget.completedWorkout.name)!
-                                .exercises[index]
-                                .getSetsList(),
-                            isCompleted: true,
+                                .exercises[index],
                             onEditSet: null,
                             onCheckboxChanged: null,
                             onTilePressed: null,

@@ -1,8 +1,12 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/pages/dashboard_page.dart';
 import 'package:workout/pages/template_workouts_list_page.dart';
 import 'package:workout/pages/workout_history_page.dart';
+
+import '../data/performed_workout_data.dart';
 
 class NavigationBarPage extends StatefulWidget {
   const NavigationBarPage({super.key});
@@ -12,6 +16,16 @@ class NavigationBarPage extends StatefulWidget {
 }
 
 class _NavigationBarPageState extends State<NavigationBarPage> {
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<TemplateWorkoutData>(context, listen: false)
+        .initialiseTemplateWorkoutList();
+    Provider.of<PerformedWorkoutData>(context, listen: false)
+        .initialiseCompletedWorkoutList();
+    Provider.of<PerformedWorkoutData>(context, listen: false).loadHeatMap();
+  }
+
   final navigationKey = GlobalKey<CurvedNavigationBarState>();
   int selectedIndex = 1;
 

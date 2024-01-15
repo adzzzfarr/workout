@@ -19,8 +19,16 @@ class TemplateWorkoutPage extends StatefulWidget {
 }
 
 class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<TemplateWorkoutData>(context, listen: false)
+        .initialiseTemplateWorkoutList();
+  }
+
   final exerciseNameController = TextEditingController();
   final setsController = TextEditingController();
+  BodyPart? selectedBodyPart;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +50,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
           onPressed: () => showExerciseDetailsDialog(
             exerciseName: null,
             sets: null,
+            bodyPart: null,
           ),
           child: const Icon(Icons.add),
         ),
@@ -51,25 +60,22 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
             itemBuilder: (context, index) => Builder(
               builder: (context) => ExerciseTile(
                 workoutType: 'template',
-                exerciseName: value
+                exercise: value
                     .getIntendedTemplateWorkout(widget.workoutName)
-                    .exercises[index]
-                    .name,
-                setsList: value
-                    .getIntendedTemplateWorkout(widget.workoutName)
-                    .exercises[index]
-                    .getSetsList(),
-                isCompleted: false,
+                    .exercises[index],
                 onCheckboxChanged: null,
                 onEditSet: null,
                 onTilePressed: (exerciseName) => showExerciseDetailsDialog(
-                  exerciseName: exerciseName,
-                  sets: value
-                      .getIntendedTemplateWorkout(widget.workoutName)
-                      .exercises[index]
-                      .setWeightReps
-                      .length,
-                ),
+                    exerciseName: exerciseName,
+                    sets: value
+                        .getIntendedTemplateWorkout(widget.workoutName)
+                        .exercises[index]
+                        .setWeightReps
+                        .length,
+                    bodyPart: value
+                        .getIntendedTemplateWorkout(widget.workoutName)
+                        .exercises[index]
+                        .bodyPart),
                 onDismissed: () {
                   Exercise deletedExercise = value
                       .getIntendedTemplateWorkout(widget.workoutName)
@@ -100,12 +106,11 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
     );
   }
 
-  void showExerciseDetailsDialog({
-    String? exerciseName,
-    int? sets,
-  }) {
+  void showExerciseDetailsDialog(
+      {String? exerciseName, int? sets, BodyPart? bodyPart}) {
     exerciseNameController.text = exerciseName ?? '';
     setsController.text = sets?.toString() ?? '';
+    selectedBodyPart = bodyPart;
 
     showDialog(
       context: context,
@@ -123,6 +128,23 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(hintText: "Sets"),
             ),
+            DropdownButtonFormField<BodyPart>(
+              value: selectedBodyPart,
+              items: BodyPart.values
+                  .map(
+                    (element) => DropdownMenuItem<BodyPart>(
+                      value: element,
+                      child: Text(formatBodyPart(element)),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) => setState(() {
+                selectedBodyPart = value;
+              }),
+              onSaved: (newValue) => setState(() {
+                selectedBodyPart = newValue;
+              }),
+            )
           ],
         ),
         actions: [
@@ -149,15 +171,21 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
     String newExerciseName = exerciseNameController.text;
     int sets = int.parse(setsController.text);
 
-    Provider.of<TemplateWorkoutData>(context, listen: false).addNewExercise(
-      widget.workoutName,
-      newExerciseName,
-      sets,
-    );
+    if (selectedBodyPart != null) {
+      Provider.of<TemplateWorkoutData>(context, listen: false).addNewExercise(
+        widget.workoutName,
+        newExerciseName,
+        selectedBodyPart!,
+        sets,
+      );
 
-    Navigator.pop(context);
-    exerciseNameController.clear();
-    setsController.clear();
+      Navigator.pop(context);
+      exerciseNameController.clear();
+      setsController.clear();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a body part.')));
+    }
   }
 
   void cancelEdit() {
@@ -176,6 +204,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
       editedExerciseName,
       originalNoOfSets,
       editedNoOfSets,
+      selectedBodyPart!,
     );
 
     Navigator.pop(context);
@@ -214,5 +243,26 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
             PerformedWorkoutPage(performedWorkout: performedWorkout),
       ),
     );
+  }
+
+  String formatBodyPart(BodyPart bodyPart) {
+    switch (bodyPart) {
+      case BodyPart.arms:
+        return 'Arms';
+      case BodyPart.shoulders:
+        return 'Shoulders';
+      case BodyPart.chest:
+        return 'Chest';
+      case BodyPart.back:
+        return 'Back';
+      case BodyPart.legs:
+        return 'Legs';
+      case BodyPart.core:
+        return 'Core';
+      case BodyPart.fullBody:
+        return 'Full Body';
+      case BodyPart.cardio:
+        return 'Cardio';
+    }
   }
 }

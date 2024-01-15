@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/pages/navigation_bar_page.dart';
-import 'package:workout/pages/template_workouts_list_page.dart';
 import 'package:workout/widgets/exercise_tile.dart';
 
 // TODO: Handle WillPopScope
@@ -71,24 +70,11 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
                         itemBuilder: (context, index) => Builder(
                           builder: (context) => ExerciseTile(
                             workoutType: 'performed',
-                            exerciseName: value
+                            exercise: value
                                 .getIntendedPerformedWorkout(
                                     widget.performedWorkout.date,
                                     widget.performedWorkout.name)!
-                                .exercises[index]
-                                .name,
-                            setsList: value
-                                .getIntendedPerformedWorkout(
-                                    widget.performedWorkout.date,
-                                    widget.performedWorkout.name)!
-                                .exercises[index]
-                                .getSetsList(),
-                            isCompleted: value
-                                .getIntendedPerformedWorkout(
-                                    widget.performedWorkout.date,
-                                    widget.performedWorkout.name)!
-                                .exercises[index]
-                                .isCompleted,
+                                .exercises[index],
                             onEditSet: (exerciseName, setNumber) =>
                                 showSetDetailsDialog(
                               exerciseName,

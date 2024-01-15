@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
-import 'package:workout/data/date_time.dart';
 
 class WorkoutHeatMap extends StatelessWidget {
   final Map<DateTime, int>? datasets;
