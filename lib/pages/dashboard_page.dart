@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/pages/template_workout_page.dart';
+import 'package:workout/pages/template_workouts_list_page.dart';
 import 'package:workout/widgets/heat_map.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -35,6 +36,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
+                    MaterialButton(
+                        child: const Text('Start A Workout'),
+                        onPressed: () => goToTemplateWorkoutsListPage()),
                     WorkoutHeatMap(
                       datasets: Provider.of<PerformedWorkoutData>(context)
                           .heatMapDataSet,
@@ -49,11 +53,11 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  void goToTemplateWorkoutPage(String workoutName) {
+  void goToTemplateWorkoutsListPage() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TemplateWorkoutPage(workoutName: workoutName),
+        builder: (context) => const TemplateWorkoutsListPage(),
       ),
     );
   }

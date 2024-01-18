@@ -11,6 +11,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(ExerciseAdapter());
+  Hive.registerAdapter(BodyPartAdapter());
   Hive.registerAdapter(TemplateWorkoutAdapter());
   Hive.registerAdapter(PerformedWorkoutAdapter());
   await Hive.openBox('workout-database');

@@ -2,17 +2,6 @@ import 'package:hive/hive.dart';
 
 part 'exercise.g.dart';
 
-enum BodyPart {
-  arms,
-  shoulders,
-  chest,
-  back,
-  legs,
-  core,
-  fullBody,
-  cardio,
-}
-
 @HiveType(typeId: 0, adapterName: 'ExerciseAdapter')
 class Exercise extends HiveObject {
   @HiveField(0)
@@ -65,4 +54,24 @@ class Exercise extends HiveObject {
         return 'Cardio';
     }
   }
+}
+
+@HiveType(typeId: 3, adapterName: 'BodyPartAdapter')
+enum BodyPart {
+  @HiveField(0)
+  arms,
+  @HiveField(1)
+  shoulders,
+  @HiveField(2)
+  chest,
+  @HiveField(3)
+  back,
+  @HiveField(4)
+  legs,
+  @HiveField(5)
+  core,
+  @HiveField(6)
+  fullBody,
+  @HiveField(7)
+  cardio,
 }

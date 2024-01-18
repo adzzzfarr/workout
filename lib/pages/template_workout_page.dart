@@ -6,6 +6,7 @@ import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/exercise.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/models/template_workout.dart';
+import 'package:workout/pages/exercise_list_page.dart';
 import 'package:workout/pages/performed_workout_page.dart';
 import 'package:workout/widgets/exercise_tile.dart';
 
@@ -47,11 +48,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => showExerciseDetailsDialog(
-            exerciseName: null,
-            sets: null,
-            bodyPart: null,
-          ),
+          onPressed: () => goToSelectExerciseScreen(),
           child: const Icon(Icons.add),
         ),
         body: Builder(
@@ -241,6 +238,23 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
       MaterialPageRoute(
         builder: (context) =>
             PerformedWorkoutPage(performedWorkout: performedWorkout),
+      ),
+    );
+  }
+
+  void goToSelectExerciseScreen() {
+    final templateWorkoutList =
+        Provider.of<TemplateWorkoutData>(context, listen: false)
+            .templateWorkoutList;
+    final currentTemplateWorkout = templateWorkoutList
+        .firstWhere((element) => element.name == widget.workoutName);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExerciseListPage(
+            isAddingExerciseToTemplateWorkout: true,
+            addToThisTemplateWorkout: currentTemplateWorkout),
       ),
     );
   }

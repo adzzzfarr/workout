@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/pages/dashboard_page.dart';
-import 'package:workout/pages/template_workouts_list_page.dart';
+import 'package:workout/pages/exercise_list_page.dart';
 import 'package:workout/pages/workout_history_page.dart';
 
 import '../data/performed_workout_data.dart';
@@ -32,7 +32,7 @@ class _NavigationBarPageState extends State<NavigationBarPage> {
   final screens = const [
     WorkoutHistoryPage(),
     DashboardPage(),
-    TemplateWorkoutsListPage(),
+    ExerciseListPage(isAddingExerciseToTemplateWorkout: false),
   ];
 
   @override
