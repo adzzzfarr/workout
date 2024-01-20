@@ -36,6 +36,9 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
   @override
   void initState() {
     super.initState();
+    for (var exercise in widget.performedWorkout.exercises) {
+      exercise.isCompleted = false;
+    }
     startWorkoutTimer();
   }
 

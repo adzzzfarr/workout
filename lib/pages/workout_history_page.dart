@@ -79,9 +79,11 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                             ),
                           ),
                         ),
-                        separatorBuilder: (context, index) => Text(
-                            dateTimeToYYYYMMDD(
-                                value.completedWorkoutList[index].date)),
+                        separatorBuilder: (context, index) {
+                          int indexPlusOne = index + 1;
+                          return Text(dateTimeToYYYYMMDD(
+                              value.completedWorkoutList[indexPlusOne].date));
+                        },
                       ),
                     ),
                   ],
