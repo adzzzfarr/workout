@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bottom_drawer/bottom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/performed_workout.dart';
@@ -89,7 +90,7 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
                                         widget.performedWorkout.date,
                                         widget.performedWorkout.name)!
                                     .exercises[index]
-                                    .setWeightReps[setNumber]
+                                    .setWeightReps![setNumber]
                               },
                             ),
                             onCheckboxChanged: (value) {
@@ -199,6 +200,8 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
 
     Provider.of<TemplateWorkoutData>(context, listen: false)
         .updateTemplateWorkout(widget.performedWorkout);
+    Provider.of<ExerciseData>(context, listen: false)
+        .updateExerciseInstances(widget.performedWorkout);
 
     Navigator.pushAndRemoveUntil(
       context,

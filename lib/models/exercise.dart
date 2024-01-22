@@ -8,7 +8,7 @@ class Exercise extends HiveObject {
   final String name;
 
   @HiveField(1)
-  final Map<int, List<dynamic>> setWeightReps;
+  final Map<int, List<dynamic>>? setWeightReps;
   // 1: [10.0, 10] => Set 1 was performed with 10.0kg for 10 reps
 
   @HiveField(2)
@@ -25,7 +25,7 @@ class Exercise extends HiveObject {
   });
 
   List<Map<String, dynamic>> getSetsList() {
-    return setWeightReps.entries
+    return setWeightReps!.entries
         .map((entry) => {
               'set': entry.key,
               'weight': entry.value[0],
@@ -50,8 +50,6 @@ class Exercise extends HiveObject {
         return 'Core';
       case BodyPart.fullBody:
         return 'Full Body';
-      case BodyPart.cardio:
-        return 'Cardio';
     }
   }
 }
@@ -72,6 +70,4 @@ enum BodyPart {
   core,
   @HiveField(6)
   fullBody,
-  @HiveField(7)
-  cardio,
 }

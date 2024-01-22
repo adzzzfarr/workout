@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:workout/data/defaults.dart';
 import 'package:workout/data/hive_database.dart';
 import 'package:workout/models/exercise.dart';
 import 'package:workout/models/template_workout.dart';
@@ -8,37 +9,7 @@ import '../models/performed_workout.dart';
 class TemplateWorkoutData extends ChangeNotifier {
   final db = HiveDatabase();
 
-  List<TemplateWorkout> templateWorkoutList = [
-    // default workout templates
-    TemplateWorkout(
-      name: "Upper Body",
-      exercises: [
-        Exercise(
-          name: "Bench Press",
-          setWeightReps: {
-            1: [10.0, 10],
-            2: [9.0, 9],
-            3: [8.0, 8],
-          },
-          bodyPart: BodyPart.chest,
-        ),
-      ],
-    ),
-    TemplateWorkout(
-      name: "Lower Body",
-      exercises: [
-        Exercise(
-          name: "Squat",
-          setWeightReps: {
-            1: [10.0, 10],
-            2: [9.0, 9],
-            3: [8.0, 8],
-          },
-          bodyPart: BodyPart.legs,
-        ),
-      ],
-    ),
-  ];
+  List<TemplateWorkout> templateWorkoutList = defaultTemplateWorkoutList;
 
   void initialiseTemplateWorkoutList() {
     if (db.prevDataExists() &&
@@ -74,7 +45,7 @@ class TemplateWorkoutData extends ChangeNotifier {
     db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
   }
 
-  void addNewExercise(
+  void addExerciseToTemplateWorkout(
     String workoutName,
     String exerciseName,
     BodyPart bodyPart,
@@ -100,36 +71,34 @@ class TemplateWorkoutData extends ChangeNotifier {
     db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
   }
 
-  void editExercise(
+  void editExerciseInTemplateWorkout(
     String workoutName,
-    String originalExerciseName,
-    String editedExerciseName,
+    String exerciseName,
     int originalNoOfSets,
     int editedNoOfSets,
-    BodyPart selectedBodyPart,
   ) {
     TemplateWorkout intendedWorkout = getIntendedTemplateWorkout(workoutName);
 
     int index = intendedWorkout.exercises
-        .indexWhere((exercise) => exercise.name == originalExerciseName);
+        .indexWhere((exercise) => exercise.name == exerciseName);
 
     if (index != -1) {
       final editedSetWeightReps =
           intendedWorkout.exercises[index].setWeightReps;
 
       if (editedNoOfSets < originalNoOfSets) {
-        editedSetWeightReps.removeWhere((key, value) => key > editedNoOfSets);
+        editedSetWeightReps!.removeWhere((key, value) => key > editedNoOfSets);
       } else if (editedNoOfSets > originalNoOfSets) {
         for (int i = originalNoOfSets + 1; i <= editedNoOfSets; i++) {
-          editedSetWeightReps[i] = [0.0, 0];
+          editedSetWeightReps![i] = [0.0, 0];
         }
       }
       // if editedNoOfSets == originalNoOfSets, there is no need to change setWeightReps
 
       Exercise editedExercise = Exercise(
-        name: editedExerciseName,
+        name: exerciseName,
         setWeightReps: editedSetWeightReps,
-        bodyPart: selectedBodyPart,
+        bodyPart: intendedWorkout.exercises[index].bodyPart,
         isCompleted: intendedWorkout.exercises[index].isCompleted,
       );
 
@@ -139,7 +108,8 @@ class TemplateWorkoutData extends ChangeNotifier {
     }
   }
 
-  void deleteExercise(String workoutName, String exerciseName) {
+  void deleteExerciseFromTemplateWorkout(
+      String workoutName, String exerciseName) {
     TemplateWorkout intendedWorkout = getIntendedTemplateWorkout(workoutName);
 
     intendedWorkout.exercises

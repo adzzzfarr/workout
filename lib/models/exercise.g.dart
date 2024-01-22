@@ -18,7 +18,7 @@ class ExerciseAdapter extends TypeAdapter<Exercise> {
     };
     return Exercise(
       name: fields[0] as String,
-      setWeightReps: (fields[1] as Map).map((dynamic k, dynamic v) =>
+      setWeightReps: (fields[1] as Map?)?.map((dynamic k, dynamic v) =>
           MapEntry(k as int, (v as List).cast<dynamic>())),
       bodyPart: fields[2] as BodyPart,
       isCompleted: fields[3] as bool,
@@ -71,8 +71,6 @@ class BodyPartAdapter extends TypeAdapter<BodyPart> {
         return BodyPart.core;
       case 6:
         return BodyPart.fullBody;
-      case 7:
-        return BodyPart.cardio;
       default:
         return BodyPart.arms;
     }
@@ -101,9 +99,6 @@ class BodyPartAdapter extends TypeAdapter<BodyPart> {
         break;
       case BodyPart.fullBody:
         writer.writeByte(6);
-        break;
-      case BodyPart.cardio:
-        writer.writeByte(7);
         break;
     }
   }

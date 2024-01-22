@@ -5,15 +5,15 @@ import 'package:workout/pages/template_workout_page.dart';
 
 import '../models/template_workout.dart';
 
-class TemplateWorkoutsListPage extends StatefulWidget {
-  const TemplateWorkoutsListPage({super.key});
+class TemplateWorkoutListPage extends StatefulWidget {
+  const TemplateWorkoutListPage({super.key});
 
   @override
-  State<TemplateWorkoutsListPage> createState() =>
-      _TemplateWorkoutsListPageState();
+  State<TemplateWorkoutListPage> createState() =>
+      _TemplateWorkoutListPageState();
 }
 
-class _TemplateWorkoutsListPageState extends State<TemplateWorkoutsListPage> {
+class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
   @override
   void initState() {
     super.initState();

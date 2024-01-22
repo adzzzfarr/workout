@@ -60,7 +60,7 @@ class PerformedWorkoutData extends ChangeNotifier {
       Exercise intendedExercise = intendedWorkout.exercises[exerciseIndex];
 
       Map<int, List<dynamic>> setWithEditedWeightReps =
-          Map.from(intendedExercise.setWeightReps);
+          Map.from(intendedExercise.setWeightReps!);
 
       setWithEditedWeightReps[setNumber] = [editedWeight, editedReps];
 

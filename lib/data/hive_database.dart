@@ -1,4 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:workout/models/exercise.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/models/template_workout.dart';
 import 'package:workout/data/date_time.dart';
@@ -72,6 +73,15 @@ class HiveDatabase {
     myBox.put("COMPLETED_WORKOUTS", completedWorkouts);
   }
 
+  void saveExercisesToDatabase(List<Exercise> exercises) {
+    myBox.put('EXERCISES', exercises);
+  }
+
+  void saveExerciseInstancesToDatabase(
+      Map<String, List<PerformedWorkout>> exerciseInstances) {
+    myBox.put('EXERCISE_INSTANCES', exerciseInstances);
+  }
+
   List<TemplateWorkout> readTemplateWorkoutsFromDatabase() {
     List<TemplateWorkout> templateWorkouts =
         (myBox.get("TEMPLATE_WORKOUTS", defaultValue: []) as List<dynamic>)
@@ -86,6 +96,40 @@ class HiveDatabase {
     print('I am reading these TemplateWorkouts: $names');
 
     return templateWorkouts;
+  }
+
+  List<Exercise> readExercisesFromDatabase() {
+    List<Exercise> exercises =
+        (myBox.get('EXERCISES', defaultValue: []) as List<dynamic>)
+            .map((e) => e as Exercise)
+            .toList();
+
+    List names = [];
+    for (var element in exercises) {
+      names.add(element.name);
+    }
+
+    print('I am reading these Exercises: $names');
+
+    return exercises;
+  }
+
+  Map<String, List<PerformedWorkout>> readExerciseInstancesFromDatabase() {
+    Map<String, List<PerformedWorkout>> exerciseInstances =
+        (myBox.get('EXERCISE_INSTANCES', defaultValue: [])
+                as Map<dynamic, dynamic>)
+            .map(
+      (key, value) {
+        String exerciseName = key as String;
+        List<dynamic> dynamicData = value as List<dynamic>;
+        List<PerformedWorkout> workouts =
+            dynamicData.map((e) => e as PerformedWorkout).toList();
+
+        return MapEntry(exerciseName, workouts);
+      },
+    );
+
+    return exerciseInstances;
   }
 
   List<PerformedWorkout> readPerformedWorkoutsFromDatabase() {

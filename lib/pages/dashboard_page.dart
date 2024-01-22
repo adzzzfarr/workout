@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
-import 'package:workout/pages/template_workout_page.dart';
-import 'package:workout/pages/template_workouts_list_page.dart';
+import 'package:workout/models/exercise.dart';
+import 'package:workout/pages/template_workout_list_page.dart';
 import 'package:workout/widgets/heat_map.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -18,7 +19,9 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     Provider.of<PerformedWorkoutData>(context, listen: false)
-        .initialiseCompletedWorkoutList();
+        .initialiseCompletedWorkoutList(); // For HeatMap
+    Provider.of<ExerciseData>(context, listen: false)
+        .initialiseExerciseInstances(); // For Pie Chart
     Provider.of<PerformedWorkoutData>(context, listen: false).loadHeatMap();
   }
 
@@ -57,7 +60,7 @@ class _DashboardPageState extends State<DashboardPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const TemplateWorkoutsListPage(),
+        builder: (context) => const TemplateWorkoutListPage(),
       ),
     );
   }

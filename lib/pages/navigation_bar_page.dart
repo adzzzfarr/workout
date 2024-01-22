@@ -1,6 +1,7 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/pages/dashboard_page.dart';
 import 'package:workout/pages/exercise_list_page.dart';
@@ -23,6 +24,9 @@ class _NavigationBarPageState extends State<NavigationBarPage> {
         .initialiseTemplateWorkoutList();
     Provider.of<PerformedWorkoutData>(context, listen: false)
         .initialiseCompletedWorkoutList();
+    Provider.of<ExerciseData>(context, listen: false).initialiseExerciseList();
+    Provider.of<ExerciseData>(context, listen: false)
+        .initialiseExerciseInstances();
     Provider.of<PerformedWorkoutData>(context, listen: false).loadHeatMap();
   }
 

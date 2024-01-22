@@ -27,7 +27,6 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
         .initialiseTemplateWorkoutList();
   }
 
-  final exerciseNameController = TextEditingController();
   final setsController = TextEditingController();
   BodyPart? selectedBodyPart;
 
@@ -63,16 +62,13 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
                 onCheckboxChanged: null,
                 onEditSet: null,
                 onTilePressed: (exerciseName) => showExerciseDetailsDialog(
-                    exerciseName: exerciseName,
-                    sets: value
-                        .getIntendedTemplateWorkout(widget.workoutName)
-                        .exercises[index]
-                        .setWeightReps
-                        .length,
-                    bodyPart: value
-                        .getIntendedTemplateWorkout(widget.workoutName)
-                        .exercises[index]
-                        .bodyPart),
+                  exerciseName: exerciseName!,
+                  sets: value
+                      .getIntendedTemplateWorkout(widget.workoutName)
+                      .exercises[index]
+                      .setWeightReps!
+                      .length,
+                ),
                 onDismissed: () {
                   Exercise deletedExercise = value
                       .getIntendedTemplateWorkout(widget.workoutName)
@@ -86,7 +82,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
                       content: Text('${deletedExercise.name} deleted.'),
                       action: SnackBarAction(
                         label: 'Undo',
-                        onPressed: () => undoDeleteExericse(
+                        onPressed: () => undoDeleteExercise(
                           widget.workoutName,
                           deletedExercise,
                           deletedExerciseIndex,
@@ -103,45 +99,21 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
     );
   }
 
-  void showExerciseDetailsDialog(
-      {String? exerciseName, int? sets, BodyPart? bodyPart}) {
-    exerciseNameController.text = exerciseName ?? '';
+  void showExerciseDetailsDialog({String? exerciseName, int? sets}) {
     setsController.text = sets?.toString() ?? '';
-    selectedBodyPart = bodyPart;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("New Exercise"),
+        title: Text(exerciseName!),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: exerciseNameController,
-              decoration: const InputDecoration(hintText: "Exercise Name"),
-            ),
             TextField(
               controller: setsController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(hintText: "Sets"),
             ),
-            DropdownButtonFormField<BodyPart>(
-              value: selectedBodyPart,
-              items: BodyPart.values
-                  .map(
-                    (element) => DropdownMenuItem<BodyPart>(
-                      value: element,
-                      child: Text(formatBodyPart(element)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) => setState(() {
-                selectedBodyPart = value;
-              }),
-              onSaved: (newValue) => setState(() {
-                selectedBodyPart = newValue;
-              }),
-            )
           ],
         ),
         actions: [
@@ -151,10 +123,8 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
           ),
           MaterialButton(
             onPressed: () {
-              if (exerciseName == null) {
-                saveNewExercise();
-              } else {
-                saveEditedExercise(exerciseName, sets!);
+              if (sets != null) {
+                saveEditedExercise(exerciseName, sets);
               }
             },
             child: const Text('Save'),
@@ -164,59 +134,35 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
     );
   }
 
-  void saveNewExercise() {
-    String newExerciseName = exerciseNameController.text;
-    int sets = int.parse(setsController.text);
-
-    if (selectedBodyPart != null) {
-      Provider.of<TemplateWorkoutData>(context, listen: false).addNewExercise(
-        widget.workoutName,
-        newExerciseName,
-        selectedBodyPart!,
-        sets,
-      );
-
-      Navigator.pop(context);
-      exerciseNameController.clear();
-      setsController.clear();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a body part.')));
-    }
-  }
-
   void cancelEdit() {
     Navigator.pop(context);
-    exerciseNameController.clear();
     setsController.clear();
   }
 
-  void saveEditedExercise(String originalExerciseName, int originalNoOfSets) {
-    String editedExerciseName = exerciseNameController.text;
+  void saveEditedExercise(String exerciseName, int originalNoOfSets) {
     int editedNoOfSets = int.parse(setsController.text);
 
-    Provider.of<TemplateWorkoutData>(context, listen: false).editExercise(
+    Provider.of<TemplateWorkoutData>(context, listen: false)
+        .editExerciseInTemplateWorkout(
       widget.workoutName,
-      originalExerciseName,
-      editedExerciseName,
+      exerciseName,
       originalNoOfSets,
       editedNoOfSets,
-      selectedBodyPart!,
     );
 
     Navigator.pop(context);
-    exerciseNameController.clear();
     setsController.clear();
   }
 
   void deleteExercise(String workoutName, String exerciseName) {
-    Provider.of<TemplateWorkoutData>(context, listen: false).deleteExercise(
+    Provider.of<TemplateWorkoutData>(context, listen: false)
+        .deleteExerciseFromTemplateWorkout(
       workoutName,
       exerciseName,
     );
   }
 
-  void undoDeleteExericse(String workoutName, Exercise deletedExerciseName,
+  void undoDeleteExercise(String workoutName, Exercise deletedExerciseName,
       int deletedExerciseIndex) {
     Provider.of<TemplateWorkoutData>(context, listen: false).addExerciseAtIndex(
         workoutName, deletedExerciseName, deletedExerciseIndex);
@@ -257,26 +203,5 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
             addToThisTemplateWorkout: currentTemplateWorkout),
       ),
     );
-  }
-
-  String formatBodyPart(BodyPart bodyPart) {
-    switch (bodyPart) {
-      case BodyPart.arms:
-        return 'Arms';
-      case BodyPart.shoulders:
-        return 'Shoulders';
-      case BodyPart.chest:
-        return 'Chest';
-      case BodyPart.back:
-        return 'Back';
-      case BodyPart.legs:
-        return 'Legs';
-      case BodyPart.core:
-        return 'Core';
-      case BodyPart.fullBody:
-        return 'Full Body';
-      case BodyPart.cardio:
-        return 'Cardio';
-    }
   }
 }

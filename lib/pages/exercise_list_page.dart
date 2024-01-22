@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/exercise.dart';
 import 'package:workout/models/template_workout.dart';
 import 'package:workout/pages/exercise_page.dart';
 import 'package:workout/pages/template_workout_page.dart';
-
 import '../data/performed_workout_data.dart';
 
 class ExerciseListPage extends StatefulWidget {
@@ -28,16 +28,27 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
     super.initState();
     Provider.of<PerformedWorkoutData>(context, listen: false)
         .initialiseCompletedWorkoutList();
+    Provider.of<ExerciseData>(context, listen: false).initialiseExerciseList();
+    Provider.of<ExerciseData>(context, listen: false)
+        .initialiseExerciseInstances();
   }
+
+  final exerciseNameController = TextEditingController();
+  BodyPart? selectedBodyPart;
+  final setsController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final exerciseNameList = getAllUniqueExerciseNames();
+    final exerciseNameList = getAllExerciseNames();
 
-    return Consumer<PerformedWorkoutData>(
+    return Consumer<ExerciseData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
           title: const Text('Exercises'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => showExerciseDetailsDialog(),
+          child: const Icon(Icons.add),
         ),
         body: exerciseNameList.isNotEmpty
             ? Builder(
@@ -48,20 +59,8 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
                         ? showInputSetsDialog(
                             context,
                             widget.addToThisTemplateWorkout!,
-                            value.completedWorkoutList
-                                .firstWhere((completedWorkout) {
-                                  for (var exercise
-                                      in completedWorkout.exercises) {
-                                    if (exercise.name ==
-                                        exerciseNameList[index]) {
-                                      return true;
-                                    }
-                                  }
-                                  return false;
-                                })
-                                .exercises
-                                .firstWhere((exercise) =>
-                                    exercise.name == exerciseNameList[index]))
+                            value.exerciseList.firstWhere((element) =>
+                                element.name == exerciseNameList[index]))
                         : goToExercisePage(exerciseNameList[index]),
                     child: Text(exerciseNameList[index]),
                   ),
@@ -72,21 +71,12 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
     );
   }
 
-  List<String> getAllUniqueExerciseNames() {
-    final completedWorkoutList =
-        Provider.of<PerformedWorkoutData>(context).getCompletedWorkoutList();
+  List<String> getAllExerciseNames() {
+    final exerciseList =
+        Provider.of<ExerciseData>(context, listen: false).exerciseList;
 
-    List<String> exerciseNameList = [];
-    for (var workout in completedWorkoutList) {
-      for (var exercise in workout.exercises) {
-        if (!exerciseNameList.contains(exercise.name)) {
-          exerciseNameList.add(exercise.name);
-        }
-      }
-    }
-
-    exerciseNameList.sort();
-    return exerciseNameList;
+    final exerciseNames = exerciseList.map((e) => e.name).toList();
+    return exerciseNames;
   }
 
   void goToExercisePage(String exerciseName) {
@@ -99,8 +89,6 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
 
   void showInputSetsDialog(BuildContext context,
       TemplateWorkout templateWorkout, Exercise exercise) {
-    final setsController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -120,7 +108,7 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
           MaterialButton(
             onPressed: () {
               Provider.of<TemplateWorkoutData>(context, listen: false)
-                  .addNewExercise(
+                  .addExerciseToTemplateWorkout(
                 templateWorkout.name,
                 exercise.name,
                 exercise.bodyPart,
@@ -140,5 +128,110 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
         ],
       ),
     );
+  }
+
+  void showExerciseDetailsDialog(
+      {String? exerciseName, int? sets, BodyPart? bodyPart}) {
+    exerciseNameController.text = exerciseName ?? '';
+    selectedBodyPart = bodyPart;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("New Exercise"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: exerciseNameController,
+              decoration: const InputDecoration(hintText: "Exercise Name"),
+            ),
+            DropdownButtonFormField<BodyPart>(
+              value: selectedBodyPart,
+              items: BodyPart.values
+                  .map(
+                    (element) => DropdownMenuItem<BodyPart>(
+                      value: element,
+                      child: Text(formatBodyPart(element)),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) => setState(() {
+                selectedBodyPart = value;
+              }),
+              onSaved: (newValue) => setState(() {
+                selectedBodyPart = newValue;
+              }),
+            )
+          ],
+        ),
+        actions: [
+          MaterialButton(
+            onPressed: cancelEdit,
+            child: const Text('Cancel'),
+          ),
+          MaterialButton(
+            onPressed: () {
+              if (exerciseName == null) {
+                saveNewExercise();
+              } else {
+                saveEditedExercise(exerciseName);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void saveNewExercise() {
+    String newExerciseName = exerciseNameController.text;
+
+    if (selectedBodyPart != null) {
+      Provider.of<ExerciseData>(context, listen: false)
+          .addExerciseToExerciseList(newExerciseName, selectedBodyPart!);
+
+      Navigator.pop(context);
+      exerciseNameController.clear();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a body part.')));
+    }
+  }
+
+  void cancelEdit() {
+    Navigator.pop(context);
+    exerciseNameController.clear();
+  }
+
+  void saveEditedExercise(String exerciseName) {
+    String editedExerciseName = exerciseNameController.text;
+
+    Provider.of<ExerciseData>(context, listen: false)
+        .editExerciseInExerciseList(
+            exerciseName, editedExerciseName, selectedBodyPart!);
+
+    Navigator.pop(context);
+    exerciseNameController.clear();
+  }
+
+  String formatBodyPart(BodyPart bodyPart) {
+    switch (bodyPart) {
+      case BodyPart.arms:
+        return 'Arms';
+      case BodyPart.shoulders:
+        return 'Shoulders';
+      case BodyPart.chest:
+        return 'Chest';
+      case BodyPart.back:
+        return 'Back';
+      case BodyPart.legs:
+        return 'Legs';
+      case BodyPart.core:
+        return 'Core';
+      case BodyPart.fullBody:
+        return 'Full Body';
+    }
   }
 }

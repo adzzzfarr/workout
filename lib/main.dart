@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/exercise.dart';
@@ -40,7 +41,10 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => PerformedWorkoutData(),
-        )
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ExerciseData(),
+        ),
       ],
       child: const MaterialApp(
         debugShowCheckedModeBanner: false,
