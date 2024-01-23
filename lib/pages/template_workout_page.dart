@@ -162,10 +162,11 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
     );
   }
 
-  void undoDeleteExercise(String workoutName, Exercise deletedExerciseName,
-      int deletedExerciseIndex) {
-    Provider.of<TemplateWorkoutData>(context, listen: false).addExerciseAtIndex(
-        workoutName, deletedExerciseName, deletedExerciseIndex);
+  void undoDeleteExercise(
+      String workoutName, Exercise deletedExercise, int deletedExerciseIndex) {
+    Provider.of<TemplateWorkoutData>(context, listen: false)
+        .addExerciseToTemplateWorkoutAtIndex(
+            workoutName, deletedExercise, deletedExerciseIndex);
   }
 
   void goToPerformedWorkoutPage(TemplateWorkout templateWorkout) {

@@ -65,7 +65,6 @@ class ExerciseData extends ChangeNotifier {
         bodyPart: bodyPart,
       ),
     );
-    exerciseList.sort((a, b) => a.name.compareTo(b.name));
 
     notifyListeners();
     db.saveExercisesToDatabase(exerciseList);
@@ -86,6 +85,20 @@ class ExerciseData extends ChangeNotifier {
         bodyPart: editedBodyPart,
       );
     }
+
+    notifyListeners();
+    db.saveExercisesToDatabase(exerciseList);
+  }
+
+  void deleteExerciseFromExerciseList(String exerciseName) {
+    exerciseList.removeWhere((element) => element.name == exerciseName);
+
+    notifyListeners();
+    db.saveExercisesToDatabase(exerciseList);
+  }
+
+  void addExerciseToExerciseListAtIndex(Exercise exercise, int index) {
+    exerciseList.insert(index, exercise);
 
     notifyListeners();
     db.saveExercisesToDatabase(exerciseList);

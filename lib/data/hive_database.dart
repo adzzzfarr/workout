@@ -74,6 +74,15 @@ class HiveDatabase {
   }
 
   void saveExercisesToDatabase(List<Exercise> exercises) {
+    exercises.sort((a, b) => a.name.compareTo(b.name));
+
+    List names = [];
+    List indices = [];
+    for (int i = 0; i < exercises.length; i++) {
+      names.add(exercises[i].name);
+      indices.add(i);
+    }
+    print('I am reading these Exercises: $names with indices: $indices');
     myBox.put('EXERCISES', exercises);
   }
 

@@ -119,7 +119,8 @@ class TemplateWorkoutData extends ChangeNotifier {
     db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
   }
 
-  void addExerciseAtIndex(String workoutName, Exercise exercise, int index) {
+  void addExerciseToTemplateWorkoutAtIndex(
+      String workoutName, Exercise exercise, int index) {
     TemplateWorkout intendedWorkout = getIntendedTemplateWorkout(workoutName);
     intendedWorkout.exercises.insert(index, exercise);
 

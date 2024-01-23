@@ -7,6 +7,7 @@ import 'package:workout/models/template_workout.dart';
 import 'package:workout/pages/exercise_page.dart';
 import 'package:workout/pages/template_workout_page.dart';
 import '../data/performed_workout_data.dart';
+import '../models/performed_workout.dart';
 
 class ExerciseListPage extends StatefulWidget {
   final bool isAddingExerciseToTemplateWorkout;
@@ -39,7 +40,7 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final exerciseNameList = getAllExerciseNames();
+    List<String> exerciseNameList = getAllExerciseNames();
 
     return Consumer<ExerciseData>(
       builder: (context, value, child) => Scaffold(
@@ -54,15 +55,43 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
             ? Builder(
                 builder: (context) => ListView.builder(
                   itemCount: exerciseNameList.length,
-                  itemBuilder: (context, index) => MaterialButton(
-                    onPressed: () => widget.isAddingExerciseToTemplateWorkout
-                        ? showInputSetsDialog(
-                            context,
-                            widget.addToThisTemplateWorkout!,
-                            value.exerciseList.firstWhere((element) =>
-                                element.name == exerciseNameList[index]))
-                        : goToExercisePage(exerciseNameList[index]),
-                    child: Text(exerciseNameList[index]),
+                  itemBuilder: (context, index) => Dismissible(
+                    key: Key(value.exerciseList[index].name),
+                    onDismissed: (direction) {
+                      Exercise deletedExercise = value.exerciseList[index];
+                      int deletedExerciseIndex = index;
+
+                      deleteExercise(deletedExercise.name);
+                      setState(() {
+                        exerciseNameList = getAllExerciseNames();
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${deletedExercise.name} deleted'),
+                          action: SnackBarAction(
+                            label: 'Undo',
+                            onPressed: () {
+                              undoDeleteExercise(
+                                  deletedExercise, deletedExerciseIndex);
+                              setState(() {
+                                exerciseNameList = getAllExerciseNames();
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: MaterialButton(
+                      onPressed: () => widget.isAddingExerciseToTemplateWorkout
+                          ? showInputSetsDialog(
+                              context,
+                              widget.addToThisTemplateWorkout!,
+                              value.exerciseList.firstWhere((element) =>
+                                  element.name == exerciseNameList[index]))
+                          : goToExercisePage(exerciseNameList[index]),
+                      child: Text(exerciseNameList[index]),
+                    ),
                   ),
                 ),
               )
@@ -115,13 +144,9 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
                 int.parse(setsController.text),
               );
 
-              // TODO: This removes the back button; try and see how to make it so that the back button brings back to TemplateWorkoutListPage
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => TemplateWorkoutPage(
-                          workoutName: templateWorkout.name)),
-                  (route) => false);
+              Navigator.of(context)
+                ..pop()
+                ..pop();
             },
             child: const Text('Save'),
           ),
@@ -130,8 +155,7 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
     );
   }
 
-  void showExerciseDetailsDialog(
-      {String? exerciseName, int? sets, BodyPart? bodyPart}) {
+  void showExerciseDetailsDialog({String? exerciseName, BodyPart? bodyPart}) {
     exerciseNameController.text = exerciseName ?? '';
     selectedBodyPart = bodyPart;
 
@@ -172,11 +196,7 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
           ),
           MaterialButton(
             onPressed: () {
-              if (exerciseName == null) {
-                saveNewExercise();
-              } else {
-                saveEditedExercise(exerciseName);
-              }
+              saveNewExercise();
             },
             child: const Text('Save'),
           ),
@@ -188,15 +208,26 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
   void saveNewExercise() {
     String newExerciseName = exerciseNameController.text;
 
-    if (selectedBodyPart != null) {
+    if (exerciseNameController.text.isNotEmpty && selectedBodyPart != null) {
       Provider.of<ExerciseData>(context, listen: false)
           .addExerciseToExerciseList(newExerciseName, selectedBodyPart!);
 
       Navigator.pop(context);
       exerciseNameController.clear();
-    } else {
+
+      setState(() {});
+    } else if (exerciseNameController.text.isNotEmpty &&
+        selectedBodyPart == null) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select a body part.')));
+    } else if (exerciseNameController.text.isEmpty &&
+        selectedBodyPart != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please input an exercise name.')));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text('Please input an exercise name and select a body part.')));
     }
   }
 
@@ -205,15 +236,15 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
     exerciseNameController.clear();
   }
 
-  void saveEditedExercise(String exerciseName) {
-    String editedExerciseName = exerciseNameController.text;
-
+  void deleteExercise(String exerciseName) {
     Provider.of<ExerciseData>(context, listen: false)
-        .editExerciseInExerciseList(
-            exerciseName, editedExerciseName, selectedBodyPart!);
+        .deleteExerciseFromExerciseList(exerciseName);
+  }
 
-    Navigator.pop(context);
-    exerciseNameController.clear();
+  void undoDeleteExercise(Exercise deletedExercise, int deletedExerciseIndex) {
+    Provider.of<ExerciseData>(context, listen: false)
+        .addExerciseToExerciseListAtIndex(
+            deletedExercise, deletedExerciseIndex);
   }
 
   String formatBodyPart(BodyPart bodyPart) {
