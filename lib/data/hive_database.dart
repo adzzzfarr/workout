@@ -73,6 +73,15 @@ class HiveDatabase {
     myBox.put("COMPLETED_WORKOUTS", completedWorkouts);
   }
 
+  void saveCompletedWorkoutDatesToDatabase(
+      List<PerformedWorkout> completedWorkouts) {
+    List<DateTime> dates = [];
+    for (var workout in completedWorkouts) {
+      dates.add(workout.date);
+    }
+    myBox.put('COMPLETED_WORKOUT_DATES', dates);
+  }
+
   void saveExercisesToDatabase(List<Exercise> exercises) {
     exercises.sort((a, b) => a.name.compareTo(b.name));
 
@@ -182,8 +191,20 @@ class HiveDatabase {
     return completedWorkouts;
   }
 
+  List<DateTime> readCompletedWorkoutDatesFromDatabase() {
+    List<DateTime> dates = (myBox
+            .get('COMPLETED_WORKOUT_DATES', defaultValue: []) as List<dynamic>)
+        .map((e) => e as DateTime)
+        .toList();
+
+    print('I am reading these dates: $dates');
+
+    return dates;
+  }
+
   int getCompletionStatus(String yyyymmdd) {
-    int completionStatus = myBox.get("COMPLETION_STATUS_$yyyymmdd") ?? 0;
+    int completionStatus =
+        myBox.get("COMPLETION_STATUS_$yyyymmdd", defaultValue: 0);
     return completionStatus;
   }
 }

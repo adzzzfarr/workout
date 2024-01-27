@@ -9,6 +9,7 @@ class PerformedWorkoutData extends ChangeNotifier {
 
   List<PerformedWorkout> performedWorkoutList = [];
   List<PerformedWorkout> completedWorkoutList = [];
+  List<DateTime> completedWorkoutDates = [];
 
   // We only need to initialise completed workouts for display in Workout History
   // because we do not need to display uncompleted ones
@@ -22,6 +23,14 @@ class PerformedWorkoutData extends ChangeNotifier {
       completedWorkoutList = db.readCompletedWorkoutsFromDatabase();
     } else {
       db.saveCompletedWorkoutsToDatabase(completedWorkoutList);
+    }
+
+    if (db.prevDataExists() &&
+        db.myBox.get('COMPLETED_WORKOUT_DATES') != null &&
+        (db.myBox.get('COMPLETED_WORKOUT_DATES') as List).isNotEmpty) {
+      completedWorkoutDates = db.readCompletedWorkoutDatesFromDatabase();
+    } else {
+      db.saveCompletedWorkoutDatesToDatabase(completedWorkoutList);
     }
   }
 
