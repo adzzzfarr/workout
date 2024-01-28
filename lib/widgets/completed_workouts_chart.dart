@@ -1,19 +1,19 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:workout/data/performed_workout_data.dart';
+import 'package:workout/models/performed_workout.dart';
 
 class CompletedWorkoutsChart extends StatelessWidget {
-  final List<DateTime> completedWorkoutDates;
-
-  const CompletedWorkoutsChart(
-      {required this.completedWorkoutDates, super.key});
+  const CompletedWorkoutsChart({super.key});
 
   @override
   Widget build(BuildContext context) {
-    List<int> weeklyCounts = getWeeklyCounts(completedWorkoutDates);
+    List<int> weeklyCounts = getWeeklyCounts(context);
 
     DateTime startOfCurrentWeek =
         DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
-    startOfCurrentWeek = getDateOnlyFromDateTime(startOfCurrentWeek);
+    startOfCurrentWeek = getDateOnly(startOfCurrentWeek);
 
     List<DateTime> lastFiveWeeks = List.generate(5,
             (index) => startOfCurrentWeek.subtract(Duration(days: index * 7)))
@@ -67,7 +67,7 @@ class CompletedWorkoutsChart extends StatelessWidget {
             return BarChartGroupData(
               x: index,
               barRods: List.generate(
-                count,
+                1,
                 (index) => BarChartRodData(
                   borderRadius: BorderRadius.circular(5),
                   toY: 7,
@@ -106,41 +106,26 @@ class CompletedWorkoutsChart extends StatelessWidget {
     );
   }
 
-  List<int> getWeeklyCounts(List<DateTime> completedWorkoutDates) {
+  List<int> getWeeklyCounts(BuildContext context) {
     DateTime startOfCurrentWeek =
         DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
-    startOfCurrentWeek = getDateOnlyFromDateTime(startOfCurrentWeek);
-
-    Map<DateTime, int> weeklyCounts = {};
-    // Keys are the first day of each week of the past 5 weeks, Values are the number of times user has worked out in that week
-
-    print('CompletedWorkoutDates: $completedWorkoutDates');
-    for (var date in completedWorkoutDates) {
-      DateTime startOfWeekOfCompletion =
-          date.subtract(Duration(days: date.weekday - DateTime.monday));
-      startOfWeekOfCompletion =
-          getDateOnlyFromDateTime(startOfWeekOfCompletion);
-
-      if (weeklyCounts.containsKey(startOfWeekOfCompletion)) {
-        weeklyCounts[startOfWeekOfCompletion] =
-            weeklyCounts[startOfWeekOfCompletion]! + 1;
-      } else {
-        weeklyCounts[startOfWeekOfCompletion] = 1;
-      }
-    }
+    startOfCurrentWeek = getDateOnly(startOfCurrentWeek);
 
     List<int> fiveWeekData = List.generate(5, (index) {
       DateTime startOfWeek =
           startOfCurrentWeek.subtract(Duration(days: index * 7));
-      startOfWeek = getDateOnlyFromDateTime(startOfWeek);
+      List<PerformedWorkout> completedWorkoutsInWeek =
+          Provider.of<PerformedWorkoutData>(context, listen: false)
+              .getCompletedWorkoutsInWeek(startOfWeek);
 
-      return weeklyCounts[startOfWeek] ?? 0;
+      return completedWorkoutsInWeek.length;
     }).reversed.toList();
+
     return fiveWeekData;
   }
 
   // Removes timestamp to avoid errors when using a day as a key
-  DateTime getDateOnlyFromDateTime(DateTime dateTime) {
+  DateTime getDateOnly(DateTime dateTime) {
     final dateOnly = DateTime(dateTime.year, dateTime.month, dateTime.day);
     return dateOnly;
   }

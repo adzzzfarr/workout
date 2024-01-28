@@ -34,10 +34,6 @@ class PerformedWorkoutData extends ChangeNotifier {
     }
   }
 
-  List<PerformedWorkout> getCompletedWorkoutList() {
-    return completedWorkoutList;
-  }
-
   int getNumberOfExercisesInPerformedWorkout(
       DateTime workoutDate, String workoutName) {
     PerformedWorkout? intendedWorkout =
@@ -98,9 +94,11 @@ class PerformedWorkoutData extends ChangeNotifier {
     }
 
     completedWorkoutList.add(intendedWorkout);
+    completedWorkoutDates.add(intendedWorkout.date);
 
     notifyListeners();
     db.saveCompletedWorkoutsToDatabase(completedWorkoutList);
+    db.saveCompletedWorkoutDatesToDatabase(completedWorkoutList);
 
     loadHeatMap();
   }
@@ -133,6 +131,19 @@ class PerformedWorkoutData extends ChangeNotifier {
 
   String getStartDate() {
     return db.getStartDate();
+  }
+
+  List<PerformedWorkout> getCompletedWorkoutsInWeek(DateTime startOfWeek) {
+    startOfWeek =
+        DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    DateTime endOfWeek =
+        startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
+
+    return completedWorkoutList
+        .where((element) =>
+            element.date.isAfter(startOfWeek) &&
+            element.date.isBefore(endOfWeek))
+        .toList();
   }
 
   void loadHeatMap() {

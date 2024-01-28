@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
-import 'package:workout/models/exercise.dart';
+import 'package:workout/widgets/body_parts_chart.dart';
 import 'package:workout/pages/template_workout_list_page.dart';
 import 'package:workout/widgets/completed_workouts_chart.dart';
 import 'package:workout/widgets/heat_map.dart';
@@ -43,16 +43,20 @@ class _DashboardPageState extends State<DashboardPage> {
                   MaterialButton(
                       child: const Text('Start A Workout'),
                       onPressed: () => goToTemplateWorkoutsListPage()),
-                  SizedBox(
+                  const SizedBox(
                     height: 300,
                     width: 750,
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: CompletedWorkoutsChart(
-                          completedWorkoutDates:
-                              Provider.of<PerformedWorkoutData>(context,
-                                      listen: false)
-                                  .completedWorkoutDates),
+                      padding: EdgeInsets.all(8.0),
+                      child: CompletedWorkoutsChart(),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 500,
+                    width: 500,
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: BodyPartsChart(),
                     ),
                   ),
                   WorkoutHeatMap(
