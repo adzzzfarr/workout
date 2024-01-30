@@ -111,8 +111,9 @@ class PerformedWorkoutData extends ChangeNotifier {
     return intendedWorkout != null ? intendedWorkout.exercises.length : 0;
   }
 
-  void deleteCompletedWorkout(String workoutName) {
-    completedWorkoutList.removeWhere((workout) => workout.name == workoutName);
+  void deleteCompletedWorkout(String workoutName, DateTime workoutDate) {
+    completedWorkoutList.removeWhere((workout) =>
+        workout.name == workoutName && workout.date == workoutDate);
 
     notifyListeners();
     db.saveCompletedWorkoutsToDatabase(completedWorkoutList);
@@ -124,7 +125,7 @@ class PerformedWorkoutData extends ChangeNotifier {
     completedWorkoutList.insert(index, completedWorkout);
 
     notifyListeners();
-    db.saveTemplateWorkoutsToDatabase(completedWorkoutList);
+    db.saveCompletedWorkoutsToDatabase(completedWorkoutList);
   }
 
   Map<DateTime, int> heatMapDataSet = {};
@@ -136,12 +137,16 @@ class PerformedWorkoutData extends ChangeNotifier {
   List<PerformedWorkout> getCompletedWorkoutsInWeek(DateTime startOfWeek) {
     startOfWeek =
         DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    print(startOfWeek);
     DateTime endOfWeek =
         startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
+    print(endOfWeek);
 
+    print('READING: ${completedWorkoutList.map((e) => e.date)}');
     return completedWorkoutList
         .where((element) =>
-            element.date.isAfter(startOfWeek) &&
+            (element.date.isAtSameMomentAs(startOfWeek) ||
+                element.date.isAfter(startOfWeek)) &&
             element.date.isBefore(endOfWeek))
         .toList();
   }

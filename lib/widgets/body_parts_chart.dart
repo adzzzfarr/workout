@@ -13,7 +13,7 @@ class BodyPartsChart extends StatelessWidget {
       PieChartData(
         sections: getCurrentWeekBodyPartSetsData(context),
         centerSpaceRadius:
-            50, //If you have a padding widget around the PieChart, make sure to set PieChartData.centerSpaceRadius to double.infinity
+            10, //If you have a padding widget around the PieChart, make sure to set PieChartData.centerSpaceRadius to double.infinity
         borderData: FlBorderData(
           show: true,
           border: Border.all(color: Colors.black, width: 0.5),

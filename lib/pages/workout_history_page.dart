@@ -46,13 +46,15 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                         itemCount: value.completedWorkoutList.length,
                         itemBuilder: (context, index) => Builder(
                           builder: (context) => Dismissible(
-                            key: Key(value.completedWorkoutList[index].name),
+                            key: Key(
+                                '${value.completedWorkoutList[index].name}${value.completedWorkoutList[index].date}'),
                             onDismissed: (direction) {
                               PerformedWorkout deletedWorkout =
                                   value.completedWorkoutList[index];
                               int deletedWorkoutIndex = index;
 
-                              deleteCompletedWorkout(deletedWorkout.name);
+                              deleteCompletedWorkout(
+                                  deletedWorkout.name, deletedWorkout.date);
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -94,9 +96,9 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
     );
   }
 
-  void deleteCompletedWorkout(String workoutName) {
+  void deleteCompletedWorkout(String workoutName, DateTime workoutDate) {
     Provider.of<PerformedWorkoutData>(context, listen: false)
-        .deleteCompletedWorkout(workoutName);
+        .deleteCompletedWorkout(workoutName, workoutDate);
   }
 
   void undoDeleteCompletedWorkout(

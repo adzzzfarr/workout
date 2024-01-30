@@ -41,8 +41,15 @@ class _NavigationBarPageState extends State<NavigationBarPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       bottomNavigationBar: CurvedNavigationBar(
+        backgroundColor: colorScheme.background,
+        buttonBackgroundColor: colorScheme.primary,
+        color: colorScheme.primary,
+        animationDuration: Duration(milliseconds: 500),
         key: navigationKey,
         index: selectedIndex,
         items: const [
