@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/performed_workout_data.dart';
@@ -9,22 +11,105 @@ class BodyPartsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PieChart(
-      PieChartData(
-        sections: getCurrentWeekBodyPartSetsData(context),
-        centerSpaceRadius:
-            10, //If you have a padding widget around the PieChart, make sure to set PieChartData.centerSpaceRadius to double.infinity
-        borderData: FlBorderData(
-          show: true,
-          border: Border.all(color: Colors.black, width: 0.5),
+    Map<String, int> bodyPartSets = getCurrentWeekBodyPartSets(context);
+    Map<String, int> sortedBySets = SplayTreeMap.from(
+      bodyPartSets,
+      (key1, key2) => bodyPartSets[key2]! > bodyPartSets[key1]! ? 1 : -1,
+    );
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    print('SCREENHEIGHT: $screenHeight');
+    final screenWidth = MediaQuery.of(context).size.width;
+    print('SCREENWIDTH: $screenWidth');
+
+    return Card(
+      color: HSLColor.fromColor(colorScheme.background)
+          .withLightness(0.2)
+          .toColor(),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: Colors.grey[600]!,
+          width: 0.5,
         ),
-        sectionsSpace: 0.1,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(
+                left: screenWidth / 17.5, top: screenHeight / 50),
+            child: Text(
+              'Sets Performed This Week',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: screenHeight / 37.5,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: PieChart(
+                    PieChartData(
+                      sections: getPieChartSectionData(bodyPartSets),
+                      centerSpaceRadius: screenWidth /
+                          7.5, //If you have a padding widget around the PieChart, make sure to set PieChartData.centerSpaceRadius to double.infinity
+                      borderData: FlBorderData(
+                        show: true,
+                        border: Border.all(color: Colors.black, width: 0.5),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        top: screenHeight / 20, left: screenWidth / 25),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (var bodyPart in sortedBySets.keys)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: screenHeight / 70,
+                                width: screenWidth / 35,
+                                color: getColor(bodyPart),
+                              ),
+                              SizedBox(width: screenWidth / 65),
+                              Text(
+                                bodyPart,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: screenHeight / 55,
+                                ),
+                              ),
+                            ],
+                          ),
+                        SizedBox(height: screenHeight / 15),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  List<PieChartSectionData> getCurrentWeekBodyPartSetsData(
-      BuildContext context) {
+  Map<String, int> getCurrentWeekBodyPartSets(BuildContext context) {
     Map<String, int> bodyPartSets = {};
     // Keys are body parts, values are number of sets performed in the week for exercises involving that body part
 
@@ -48,11 +133,20 @@ class BodyPartsChart extends StatelessWidget {
       }
     }
 
+    return bodyPartSets;
+  }
+
+  List<PieChartSectionData> getPieChartSectionData(
+      Map<String, int> bodyPartSets) {
     List<PieChartSectionData> sections = bodyPartSets.entries
         .map((entry) => PieChartSectionData(
               color: getColor(entry.key),
               value: entry.value.toDouble(),
-              title: entry.key,
+              title: entry.value.toString(),
+              titleStyle: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+              ),
             ))
         .toList();
 
@@ -61,12 +155,20 @@ class BodyPartsChart extends StatelessWidget {
 
   Color getColor(String bodyPart) {
     switch (bodyPart) {
+      case 'Arms':
+        return Colors.orange;
+      case 'Shoulders':
+        return Colors.purple;
       case 'Chest':
         return Colors.red;
       case 'Back':
         return Colors.green;
       case 'Legs':
         return Colors.blue;
+      case 'Core':
+        return Colors.yellow;
+      case 'Full Body':
+        return Colors.brown;
       default:
         return Colors.black;
     }

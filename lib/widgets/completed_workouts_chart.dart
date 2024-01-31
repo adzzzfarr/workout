@@ -12,6 +12,9 @@ class CompletedWorkoutsChart extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     List<int> weeklyCounts = getWeeklyCounts(context);
 
     DateTime startOfCurrentWeek =
@@ -37,20 +40,27 @@ class CompletedWorkoutsChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 20, top: 16),
+          Padding(
+            padding: EdgeInsets.only(
+              left: screenWidth / 17.5,
+              top: screenHeight / 55,
+            ),
             child: Text(
               'Workouts Per Week',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: screenHeight / 37.5,
               ),
             ),
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(
-                  left: 20, right: 20, top: 16, bottom: 8),
+              padding: EdgeInsets.only(
+                left: screenWidth / 20,
+                right: screenWidth / 20,
+                top: screenHeight / 55,
+                bottom: screenHeight / 110,
+              ),
               child: BarChart(
                 BarChartData(
                   titlesData: FlTitlesData(
@@ -60,7 +70,7 @@ class CompletedWorkoutsChart extends StatelessWidget {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 60,
+                        reservedSize: screenHeight / 15,
                         getTitlesWidget: (value, meta) {
                           int index = value.toInt();
                           if (index >= 0 && index < 4) {
@@ -69,9 +79,9 @@ class CompletedWorkoutsChart extends StatelessWidget {
                                 startDate.add(const Duration(days: 6));
 
                             return Padding(
-                              padding: const EdgeInsets.only(top: 4),
+                              padding: EdgeInsets.only(top: screenHeight / 175),
                               child: SizedBox(
-                                width: 50,
+                                width: screenWidth / 5,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -113,21 +123,20 @@ class CompletedWorkoutsChart extends StatelessWidget {
                         barRods: List.generate(
                           1,
                           (index) => BarChartRodData(
-                            borderRadius: BorderRadius.circular(5),
+                            borderRadius: BorderRadius.circular(2.5),
                             toY: 7,
                             color: Colors.transparent,
-                            width: 50,
+                            width: screenWidth / 8.25,
                             rodStackItems: [
                               for (int i = 0; i < count; i++)
                                 BarChartRodStackItem(
                                     i.toDouble(),
                                     i + 1,
-                                    Colors.blue,
+                                    const Color.fromARGB(255, 9, 103, 137),
                                     const BorderSide(
-                                        color: Colors.grey,
-                                        width: 0.3,
-                                        strokeAlign:
-                                            BorderSide.strokeAlignCenter))
+                                      color: Colors.grey,
+                                      width: 0.3,
+                                    ))
                             ],
                           ),
                         ),

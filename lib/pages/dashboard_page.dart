@@ -47,22 +47,23 @@ class _DashboardPageState extends State<DashboardPage> {
             children: [
               Column(
                 children: [
-                  const SizedBox(height: 16),
+                  SizedBox(height: screenHeight / 60),
                   CommonButton(
                     height: screenHeight / 15,
                     width: screenWidth - 30,
                     text: 'Start Workout',
                     onPressed: () => goToTemplateWorkoutsListPage(),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: screenHeight / 60),
                   SizedBox(
-                      height: screenHeight / 2.75,
+                      height: screenHeight / 2.5,
                       width: screenWidth - 30,
                       child: const CompletedWorkoutsChart()),
-                  const SizedBox(
-                    height: 400,
-                    width: 400,
-                    child: BodyPartsChart(),
+                  SizedBox(height: screenHeight / 70),
+                  SizedBox(
+                    height: screenHeight / 2.7,
+                    width: screenWidth - 30,
+                    child: const BodyPartsChart(),
                   ),
                   WorkoutHeatMap(
                     datasets: Provider.of<PerformedWorkoutData>(context)
