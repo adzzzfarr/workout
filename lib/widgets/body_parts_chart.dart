@@ -43,7 +43,7 @@ class BodyPartsChart extends StatelessWidget {
             padding: EdgeInsets.only(
                 left: screenWidth / 17.5, top: screenHeight / 50),
             child: Text(
-              'Sets Performed This Week',
+              'Sets This Week',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: screenHeight / 37.5,

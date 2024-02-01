@@ -29,10 +29,6 @@ class TemplateWorkoutData extends ChangeNotifier {
     print('TemplateWorkoutList: $names');
   }
 
-  List<TemplateWorkout> getTemplateWorkoutList() {
-    return templateWorkoutList;
-  }
-
   int getNumberOfExercises(String workoutName) {
     TemplateWorkout intendedWorkout = getIntendedTemplateWorkout(workoutName);
 
