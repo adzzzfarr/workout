@@ -47,7 +47,8 @@ class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
                     name: value.templateWorkoutList[index].name,
                     noOfExercises:
                         value.templateWorkoutList[index].exercises.length,
-                    cardKey: Key(value.templateWorkoutList[index].name),
+                    cardKey: Key(value.templateWorkoutList[index]
+                        .name), //TODO: Make sure user cannot add a workout that has the same name
                     onPressed: () => goToTemplateWorkoutPage(
                         value.templateWorkoutList[index].name),
                     onDismissed: (direction) {

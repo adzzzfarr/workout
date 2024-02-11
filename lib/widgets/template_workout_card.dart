@@ -53,8 +53,11 @@ class TemplateWorkoutCard extends StatelessWidget {
               ),
               title: Text(
                 name,
-                style:
-                    TextStyle(color: Colors.white, fontSize: screenHeight / 45),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: screenHeight / 45,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               subtitle: Text(
                 noOfExercises > 1 || noOfExercises == 0

@@ -7,8 +7,9 @@ import 'package:workout/models/exercise.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/models/template_workout.dart';
 import 'package:workout/pages/exercise_list_page.dart';
+import 'package:workout/pages/exercise_page.dart';
 import 'package:workout/pages/performed_workout_page.dart';
-import 'package:workout/widgets/exercise_tile.dart';
+import 'package:workout/widgets/template_workout_exercise_tile.dart';
 
 class TemplateWorkoutPage extends StatefulWidget {
   final String workoutName;
@@ -54,22 +55,27 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
           builder: (context) => ListView.builder(
             itemCount: value.getNumberOfExercises(widget.workoutName),
             itemBuilder: (context, index) => Builder(
-              builder: (context) => ExerciseTile(
-                workoutType: 'template',
+              builder: (context) => TemplateWorkoutExerciseTile(
                 exercise: value
                     .getIntendedTemplateWorkout(widget.workoutName)
                     .exercises[index],
-                onCheckboxChanged: null,
-                onEditSet: null,
-                onTilePressed: (exerciseName) => showExerciseDetailsDialog(
-                  exerciseName: exerciseName!,
+                tileKey: Key(value
+                    .getIntendedTemplateWorkout(widget.workoutName)
+                    .exercises[index]
+                    .name), // TODO: Make sure user cannot add an exercise that is already in the workout
+                onTilePressed: () => goToExercisePage(value
+                    .getIntendedTemplateWorkout(widget.workoutName)
+                    .exercises[index]
+                    .name),
+                onEditPressed: (exerciseName) => showExerciseDetailsDialog(
+                  exerciseName: exerciseName,
                   sets: value
                       .getIntendedTemplateWorkout(widget.workoutName)
                       .exercises[index]
                       .setWeightReps!
                       .length,
                 ),
-                onDismissed: () {
+                onDismissed: (direction) {
                   Exercise deletedExercise = value
                       .getIntendedTemplateWorkout(widget.workoutName)
                       .exercises[index];
@@ -105,7 +111,18 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(exerciseName!),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Colors.grey[600]!,
+            width: 0.5,
+          ),
+        ),
+        elevation: 10,
+        title: Text(
+          exerciseName!,
+          style: const TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -113,6 +130,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
               controller: setsController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(hintText: "Sets"),
+              style: const TextStyle(color: Colors.white),
             ),
           ],
         ),
@@ -202,6 +220,15 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
         builder: (context) => ExerciseListPage(
             isAddingExerciseToTemplateWorkout: true,
             addToThisTemplateWorkout: currentTemplateWorkout),
+      ),
+    );
+  }
+
+  void goToExercisePage(String exerciseName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExercisePage(exerciseName: exerciseName),
       ),
     );
   }

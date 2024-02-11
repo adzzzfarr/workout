@@ -6,7 +6,7 @@ ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primary: const Color.fromARGB(255, 44, 171, 193),
     onPrimary: Colors.white,
-    secondary: const Color.fromARGB(255, 70, 178, 217),
+    secondary: const Color.fromARGB(255, 65, 158, 192),
     onSecondary: Colors.white,
     error: Colors.red,
     onError: Colors.black,

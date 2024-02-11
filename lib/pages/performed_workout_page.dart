@@ -8,9 +8,11 @@ import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/pages/navigation_bar_page.dart';
+import 'package:workout/widgets/common_button.dart';
 import 'package:workout/widgets/exercise_tile.dart';
+import 'package:workout/widgets/performed_workout_exercise_tile.dart';
 
-// TODO: Handle WillPopScope
+import '../models/exercise.dart';
 
 class PerformedWorkoutPage extends StatefulWidget {
   final PerformedWorkout performedWorkout;
@@ -38,7 +40,9 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
   void initState() {
     super.initState();
     for (var exercise in widget.performedWorkout.exercises) {
-      exercise.isCompleted = false;
+      for (var setNumber in exercise.setsCompletion!.keys) {
+        exercise.setsCompletion![setNumber] = false;
+      }
     }
     startWorkoutTimer();
   }
@@ -46,75 +50,130 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<PerformedWorkoutData>(
-      builder: (context, value, child) => Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text(widget.performedWorkout.name),
-          actions: [
-            MaterialButton(
-              onPressed: () => finishWorkout(),
-              child: const Text('Finish'),
-            ),
-          ],
-        ),
-        body: Builder(
-          builder: (context) {
-            return Stack(
-              children: [
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: displayWorkoutTimer(),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: value.getNumberOfExercisesInPerformedWorkout(
-                            widget.performedWorkout.date,
-                            widget.performedWorkout.name),
-                        itemBuilder: (context, index) => Builder(
-                          builder: (context) => ExerciseTile(
-                            workoutType: 'performed',
-                            exercise: value
-                                .getIntendedPerformedWorkout(
-                                    widget.performedWorkout.date,
-                                    widget.performedWorkout.name)!
-                                .exercises[index],
-                            onEditSet: (exerciseName, setNumber) =>
-                                showSetDetailsDialog(
-                              exerciseName,
-                              setNumber,
-                              {
-                                setNumber: value
-                                    .getIntendedPerformedWorkout(
-                                        widget.performedWorkout.date,
-                                        widget.performedWorkout.name)!
-                                    .exercises[index]
-                                    .setWeightReps![setNumber]
-                              },
-                            ),
-                            onCheckboxChanged: (value) {
-                              setState(() {
-                                widget.performedWorkout.exercises[index]
-                                        .isCompleted =
-                                    !widget.performedWorkout.exercises[index]
-                                        .isCompleted;
-                              });
-                            },
-                            onTilePressed: null,
-                            onDismissed:
-                                null, // Cannot delete exercises in a performed workout
-                          ),
+      builder: (context, value, child) => WillPopScope(
+        onWillPop: () => showConfirmCancelWorkoutDialog(),
+        child: Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            title: Text(widget.performedWorkout.name),
+            actions: [
+              IconButton(
+                onPressed: () => allExercisesCompleted(widget.performedWorkout)
+                    ? finishWorkout()
+                    : ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Please mark all sets as completed.'))),
+                icon: const Icon(Icons.flag),
+              ),
+            ],
+          ),
+          body: Builder(
+            builder: (context) {
+              return Stack(
+                children: [
+                  Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: displayWorkoutTimer(context),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount:
+                              value.getNumberOfExercisesInPerformedWorkout(
+                                  widget.performedWorkout.date,
+                                  widget.performedWorkout.name),
+                          itemBuilder: (context, index) => Builder(
+                              builder: (context) =>
+                                  PerformedWorkoutExerciseTile(
+                                    exercise: value
+                                        .getIntendedPerformedWorkout(
+                                            widget.performedWorkout.date,
+                                            widget.performedWorkout.name)!
+                                        .exercises[index],
+                                    onEditSet: (exerciseName, setNumber) =>
+                                        showSetDetailsDialog(
+                                      exerciseName,
+                                      setNumber,
+                                      {
+                                        setNumber: value
+                                            .getIntendedPerformedWorkout(
+                                                widget.performedWorkout.date,
+                                                widget.performedWorkout.name)!
+                                            .exercises[index]
+                                            .setWeightReps![setNumber]
+                                      },
+                                    ),
+                                    onCheckboxChanged: (val, setNumber) {
+                                      setDataIsValid(
+                                        value
+                                            .getIntendedPerformedWorkout(
+                                                widget.performedWorkout.date,
+                                                widget.performedWorkout.name)!
+                                            .exercises[index]
+                                            .name,
+                                        setNumber,
+                                      )
+                                          ? setState(
+                                              () => toggleSetCompletion(
+                                                value
+                                                    .getIntendedPerformedWorkout(
+                                                        widget.performedWorkout
+                                                            .date,
+                                                        widget.performedWorkout
+                                                            .name)!
+                                                    .exercises[index]
+                                                    .name,
+                                                setNumber,
+                                              ),
+                                            )
+                                          : ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      'Perform at least one rep.')));
+                                    },
+                                  )),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                buildBottomDrawer(context),
-              ],
-            );
-          },
+                    ],
+                  ),
+                  buildBottomDrawer(context),
+                ],
+              );
+            },
+          ),
         ),
+      ),
+    );
+  }
+
+  Future<bool> showConfirmCancelWorkoutDialog() async {
+    return await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Colors.grey[600]!,
+            width: 0.5,
+          ),
+        ),
+        elevation: 10,
+        title: const Text(
+          "Cancel Workout?",
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), // Don't pop
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // Pop
+            child: const Text('Yes'),
+          ),
+        ],
       ),
     );
   }
@@ -133,21 +192,39 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Colors.grey[600]!,
+            width: 0.5,
+          ),
+        ),
+        elevation: 10,
         title: Text(
           'Edit Set $setNumber Details',
+          style: const TextStyle(color: Colors.white),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: weightController,
-              decoration: const InputDecoration(hintText: "Weight"),
+              decoration: InputDecoration(
+                  hintText: "Weight",
+                  errorText:
+                      validateWeight(double.parse(weightController.text)),
+                  errorStyle: const TextStyle(color: Colors.white)),
+              style: const TextStyle(color: Colors.white),
             ),
             TextField(
               controller: repsController,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(hintText: "Reps"),
+              decoration: InputDecoration(
+                  hintText: "Reps",
+                  errorText: validateReps(int.parse(repsController.text)),
+                  errorStyle: const TextStyle(color: Colors.white)),
+              style: const TextStyle(color: Colors.white),
             ),
           ],
         ),
@@ -178,19 +255,33 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     double weight = double.parse(weightController.text);
     int reps = int.parse(repsController.text);
 
-    Provider.of<PerformedWorkoutData>(context, listen: false).editSet(
-      widget.performedWorkout.date,
-      widget.performedWorkout.name,
-      exerciseName,
-      setNumber,
-      weight,
-      reps,
-    );
+    if (weight >= 0 && reps > 0) {
+      Provider.of<PerformedWorkoutData>(context, listen: false).editSet(
+        widget.performedWorkout.date,
+        widget.performedWorkout.name,
+        exerciseName,
+        setNumber,
+        weight,
+        reps,
+      );
 
-    Navigator.pop(context);
-    weightController.clear();
-    setsController.clear();
-    repsController.clear();
+      Navigator.pop(context);
+      weightController.clear();
+      setsController.clear();
+      repsController.clear();
+    }
+  }
+
+  void toggleSetCompletion(String exerciseName, int setNumber) {
+    Provider.of<PerformedWorkoutData>(context, listen: false)
+        .toggleSetCompletion(widget.performedWorkout.date,
+            widget.performedWorkout.name, exerciseName, setNumber);
+  }
+
+  bool setDataIsValid(String exerciseName, int setNumber) {
+    return Provider.of<PerformedWorkoutData>(context, listen: false)
+        .ensureValidSetData(widget.performedWorkout.date,
+            widget.performedWorkout.name, exerciseName, setNumber);
   }
 
   void finishWorkout() {
@@ -212,16 +303,30 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     );
   }
 
-  Widget displayWorkoutTimer() {
+  Widget displayWorkoutTimer(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     String twoDigits(int number) => number.toString().padLeft(2, '0');
     final hours = twoDigits(workoutDuration.inHours);
     final minutes = twoDigits(workoutDuration.inMinutes.remainder(60));
     final seconds = twoDigits(workoutDuration.inSeconds.remainder(60));
 
     if (workoutDuration.inMinutes >= 60) {
-      return Text('$hours:$minutes:$seconds');
+      return Text(
+        '$hours:$minutes:$seconds',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: screenHeight / 45,
+        ),
+      );
     } else {
-      return Text('$minutes:$seconds');
+      return Text(
+        '$minutes:$seconds',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: screenHeight / 45,
+        ),
+      );
     }
   }
 
@@ -245,135 +350,196 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
   }
 
   Widget buildBottomDrawer(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return BottomDrawer(
+      color: isResting
+          ? colorScheme.primary
+          : HSLColor.fromColor(colorScheme.background)
+              .withLightness(0.3)
+              .toColor(),
+      cornerRadius: 60,
       header: buildBottomDrawerHead(context),
-      body: _buildBottomDrawerBody(context),
-      headerHeight: 60,
-      drawerHeight: 360,
+      body: buildBottomDrawerBody(context),
+      headerHeight: screenHeight / 10,
+      drawerHeight: screenHeight / 5,
       controller: bottomDrawerController,
     );
   }
 
   Widget buildBottomDrawerHead(BuildContext context) {
-    return SizedBox(
-      height: 60,
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Expanded(
       child: Column(
-        children: const [
-          Padding(
-              padding: EdgeInsets.only(
-                left: 10.0,
-                right: 10.0,
-                top: 20.0,
-              ),
-              child: Text('Rest')),
-          Spacer(),
-          Divider(
-            height: 1.0,
-            color: Colors.grey,
-          ),
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          isResting
+              ? Text(
+                  'Resting',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: screenHeight / 40,
+                  ),
+                )
+              : Text(
+                  'Rest',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: screenHeight / 40,
+                  ),
+                ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomDrawerBody(BuildContext context) {
+  Widget buildBottomDrawerBody(BuildContext context) {
     if (!isResting) {
-      return SizedBox(
-        width: double.infinity,
-        height: 360,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [displayRestTimeButtons()],
+      return Column(
+        children: [
+          const Divider(
+            thickness: 1,
+            color: Colors.grey,
           ),
-        ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [displayRestTimeButtons(context)],
+            ),
+          ),
+        ],
       );
     } else {
-      return SizedBox(
-        width: double.infinity,
-        height: 360,
-        child: Row(
-          children: [
-            displayRestTimer(),
-            displayThirtySecondButtons(),
-          ],
-        ),
+      return Column(
+        children: [
+          const Divider(
+            thickness: 1,
+            color: Colors.white,
+          ),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                displaySubtract30sButton(context),
+                displayRestTimer(context),
+                displayAdd30sButton(context),
+              ],
+            ),
+          ),
+        ],
       );
     }
   }
 
-  Widget displayRestTimer() {
-    String twoDigits(int number) => number.toString().padLeft(2, '0');
-    final minutes = twoDigits(restDuration.inMinutes.remainder(60));
-    final seconds = twoDigits(restDuration.inSeconds.remainder(60));
+  Widget displayRestTimeButtons(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
-    return Text('$minutes:$seconds');
-  }
-
-  Widget displayRestTimeButtons() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        MaterialButton(
+        CommonButton(
+          height: screenHeight / 27.5,
+          width: screenWidth / 5,
+          text: '1:00',
           onPressed: () => setState(() {
             restDuration = const Duration(minutes: 1);
             startRestTimer();
           }),
-          child: const Text('1:00'),
         ),
-        MaterialButton(
+        CommonButton(
+          height: screenHeight / 27.5,
+          width: screenWidth / 5,
+          text: '2:00',
           onPressed: () => setState(() {
             restDuration = const Duration(minutes: 2);
             startRestTimer();
           }),
-          child: const Text('2:00'),
         ),
-        MaterialButton(
+        CommonButton(
+          height: screenHeight / 27.5,
+          width: screenWidth / 5,
+          text: '3:00',
           onPressed: () => setState(() {
             restDuration = const Duration(minutes: 3);
             startRestTimer();
           }),
-          child: const Text('3:00'),
         ),
-        MaterialButton(
+        CommonButton(
+          height: screenHeight / 27.5,
+          width: screenWidth / 5,
+          text: '4:00',
           onPressed: () => setState(() {
             restDuration = const Duration(minutes: 4);
             startRestTimer();
           }),
-          child: const Text('4:00'),
         ),
       ],
     );
   }
 
-  Widget displayThirtySecondButtons() {
-    return Row(
-      children: [
-        MaterialButton(
-          onPressed: () {
-            setState(
-              () {
-                final seconds = restDuration.inSeconds + 30;
-                restDuration = Duration(seconds: seconds);
-              },
-            );
+  Widget displayRestTimer(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    String twoDigits(int number) => number.toString().padLeft(2, '0');
+    final minutes = twoDigits(restDuration.inMinutes.remainder(60));
+    final seconds = twoDigits(restDuration.inSeconds.remainder(60));
+
+    return Text(
+      '$minutes:$seconds',
+      style: TextStyle(
+        fontSize: screenHeight / 20,
+        color: Colors.white,
+        letterSpacing: screenWidth / 55,
+      ),
+    );
+  }
+
+  Widget displayAdd30sButton(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return CommonButton(
+      height: 30,
+      width: 90,
+      color: colorScheme.secondary,
+      text: '+30s',
+      onPressed: () => setState(
+        () {
+          final seconds = restDuration.inSeconds + 30;
+          restDuration = Duration(seconds: seconds);
+        },
+      ),
+    );
+  }
+
+  Widget displaySubtract30sButton(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return CommonButton(
+      height: 30,
+      width: 90,
+      color: colorScheme.secondary,
+      text: '-30s',
+      onPressed: () => setState(
+        () => setState(
+          () {
+            int seconds = restDuration.inSeconds - 30;
+            if (seconds < 0) {
+              seconds = 0;
+              isResting = false;
+            }
+            restDuration = Duration(seconds: seconds);
           },
-          child: const Text('+ 30s'),
         ),
-        MaterialButton(
-          onPressed: () {
-            setState(
-              () {
-                int seconds = restDuration.inSeconds - 30;
-                if (seconds < 0) {
-                  seconds = 0;
-                  isResting = false;
-                }
-                restDuration = Duration(seconds: seconds);
-              },
-            );
-          },
-          child: const Text('- 30s'),
-        ),
-      ],
+      ),
     );
   }
 
@@ -402,5 +568,30 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     restTimer?.cancel();
     isResting = false;
     bottomDrawerController.close();
+  }
+
+  bool allExercisesCompleted(PerformedWorkout performedWorkout) {
+    for (var exercise in performedWorkout.exercises) {
+      for (var setNumber in exercise.setsCompletion!.keys) {
+        if (exercise.setsCompletion![setNumber] == false) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  String? validateWeight(double weight) {
+    if (weight < 0) {
+      return 'Please input a valid weight.';
+    }
+    return null;
+  }
+
+  String? validateReps(int reps) {
+    if (reps <= 0) {
+      return 'Please input a valid rep count.';
+    }
+    return null;
   }
 }

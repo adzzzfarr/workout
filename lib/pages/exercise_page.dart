@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/date_time.dart';
@@ -114,7 +112,6 @@ class _ExercisePageState extends State<ExercisePage> {
     if (dateWorkoutSetData.isEmpty) {
       return null;
     }
-    print(dateWorkoutSetData);
     return dateWorkoutSetData;
   }
 

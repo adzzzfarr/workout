@@ -49,7 +49,7 @@ class _NavigationBarPageState extends State<NavigationBarPage> {
         backgroundColor: colorScheme.background,
         buttonBackgroundColor: colorScheme.primary,
         color: colorScheme.primary,
-        animationDuration: Duration(milliseconds: 500),
+        animationDuration: const Duration(milliseconds: 500),
         key: navigationKey,
         index: selectedIndex,
         items: const [

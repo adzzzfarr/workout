@@ -72,8 +72,69 @@ class PerformedWorkoutData extends ChangeNotifier {
       Exercise editedExercise = Exercise(
         name: intendedExercise.name,
         setWeightReps: setWithEditedWeightReps,
+        setsCompletion: intendedExercise.setsCompletion,
         bodyPart: intendedExercise.bodyPart,
-        isCompleted: intendedExercise.isCompleted,
+      );
+
+      intendedWorkout.exercises[exerciseIndex] = editedExercise;
+      notifyListeners();
+      db.savePerformedWorkoutsToDatabase(performedWorkoutList);
+    } else {
+      print('Exercise $exerciseName not found in ${intendedWorkout.name}');
+    }
+  }
+
+  bool ensureValidSetData(
+    DateTime workoutDate,
+    String workoutName,
+    String exerciseName,
+    int setNumber,
+  ) {
+    PerformedWorkout? intendedWorkout =
+        getIntendedPerformedWorkout(workoutDate, workoutName);
+
+    int exerciseIndex = intendedWorkout!.exercises
+        .indexWhere((exercise) => exercise.name == exerciseName);
+
+    if (exerciseIndex != -1) {
+      Exercise intendedExercise = intendedWorkout.exercises[exerciseIndex];
+
+      // Check if no reps performed. Weight can be 0 (e.g. bodyweight exercises)
+      if (intendedExercise.setWeightReps![setNumber]![1] == 0) {
+        return false;
+      }
+      return true;
+    } else {
+      print('Exercise $exerciseName not found in ${intendedWorkout.name}');
+      return false;
+    }
+  }
+
+  void toggleSetCompletion(
+    DateTime workoutDate,
+    String workoutName,
+    String exerciseName,
+    int setNumber,
+  ) {
+    PerformedWorkout? intendedWorkout =
+        getIntendedPerformedWorkout(workoutDate, workoutName);
+
+    int exerciseIndex = intendedWorkout!.exercises
+        .indexWhere((exercise) => exercise.name == exerciseName);
+
+    if (exerciseIndex != -1) {
+      Exercise intendedExercise = intendedWorkout.exercises[exerciseIndex];
+
+      Map<int, bool> editedSetsCompletion =
+          Map.from(intendedExercise.setsCompletion!);
+
+      editedSetsCompletion[setNumber] = !editedSetsCompletion[setNumber]!;
+
+      Exercise editedExercise = Exercise(
+        name: intendedExercise.name,
+        setWeightReps: intendedExercise.setWeightReps,
+        setsCompletion: editedSetsCompletion,
+        bodyPart: intendedExercise.bodyPart,
       );
 
       intendedWorkout.exercises[exerciseIndex] = editedExercise;
@@ -89,11 +150,9 @@ class PerformedWorkoutData extends ChangeNotifier {
     PerformedWorkout? intendedWorkout =
         getIntendedPerformedWorkout(workoutDate, workoutName);
 
-    for (var exercise in intendedWorkout!.exercises) {
-      exercise.isCompleted = true;
-    }
+    // TODO: make sure all sets are complete before finishWorkout is called. Can use db.allExerciseCompleted as the condition
 
-    completedWorkoutList.add(intendedWorkout);
+    completedWorkoutList.add(intendedWorkout!);
     completedWorkoutDates.add(intendedWorkout.date);
 
     notifyListeners();
@@ -137,12 +196,9 @@ class PerformedWorkoutData extends ChangeNotifier {
   List<PerformedWorkout> getCompletedWorkoutsInWeek(DateTime startOfWeek) {
     startOfWeek =
         DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
-    print(startOfWeek);
     DateTime endOfWeek =
         startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
-    print(endOfWeek);
 
-    print('READING: ${completedWorkoutList.map((e) => e.date)}');
     return completedWorkoutList
         .where((element) =>
             (element.date.isAtSameMomentAs(startOfWeek) ||

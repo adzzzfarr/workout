@@ -50,15 +50,18 @@ class TemplateWorkoutData extends ChangeNotifier {
     TemplateWorkout intendedWorkout = getIntendedTemplateWorkout(workoutName);
 
     Map<int, List<dynamic>> setWeightReps = {};
+    Map<int, bool> setsCompletion = {};
 
     for (int i = 1; i <= sets; i++) {
       setWeightReps[i] = [0.0, 0];
+      setsCompletion[i] = false;
     }
 
     intendedWorkout.exercises.add(
       Exercise(
         name: exerciseName,
         setWeightReps: setWeightReps,
+        setsCompletion: setsCompletion,
         bodyPart: bodyPart,
       ),
     );
@@ -94,8 +97,8 @@ class TemplateWorkoutData extends ChangeNotifier {
       Exercise editedExercise = Exercise(
         name: exerciseName,
         setWeightReps: editedSetWeightReps,
+        setsCompletion: intendedWorkout.exercises[index].setsCompletion,
         bodyPart: intendedWorkout.exercises[index].bodyPart,
-        isCompleted: intendedWorkout.exercises[index].isCompleted,
       );
 
       intendedWorkout.exercises[index] = editedExercise;
@@ -139,10 +142,10 @@ class TemplateWorkoutData extends ChangeNotifier {
   }
 
   void updateTemplateWorkout(PerformedWorkout completedWorkout) {
-    TemplateWorkout intendedTemplateWorkout =
-        getIntendedTemplateWorkout(completedWorkout.name);
+    int index = templateWorkoutList
+        .indexWhere((element) => element.name == completedWorkout.name);
 
-    intendedTemplateWorkout = TemplateWorkout(
+    templateWorkoutList[index] = TemplateWorkout(
         name: completedWorkout.name, exercises: completedWorkout.exercises);
   }
 

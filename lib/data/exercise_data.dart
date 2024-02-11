@@ -62,6 +62,7 @@ class ExerciseData extends ChangeNotifier {
       Exercise(
         name: exerciseName,
         setWeightReps: null,
+        setsCompletion: null,
         bodyPart: bodyPart,
       ),
     );
@@ -82,6 +83,7 @@ class ExerciseData extends ChangeNotifier {
       exerciseList[index] = Exercise(
         name: editedExerciseName,
         setWeightReps: null,
+        setsCompletion: null,
         bodyPart: editedBodyPart,
       );
     }

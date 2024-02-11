@@ -26,8 +26,10 @@ class HiveDatabase {
 
   bool allExercisesCompleted(PerformedWorkout performedWorkout) {
     for (var exercise in performedWorkout.exercises) {
-      if (!exercise.isCompleted) {
-        return false;
+      for (var setNumber in exercise.setsCompletion!.keys) {
+        if (exercise.setsCompletion![setNumber] == false) {
+          return false;
+        }
       }
     }
     return true;
@@ -184,10 +186,6 @@ class HiveDatabase {
     print(
         'I am reading these CompletedWorkouts: $names with corresponding durations: $durations');
 
-    for (var date in dates) {
-      print('COMPLETION STATUS for  $date: ${getCompletionStatus(date)}');
-    }
-
     return completedWorkouts;
   }
 
@@ -196,8 +194,6 @@ class HiveDatabase {
             .get('COMPLETED_WORKOUT_DATES', defaultValue: []) as List<dynamic>)
         .map((e) => e as DateTime)
         .toList();
-
-    print('I am reading these dates: $dates');
 
     return dates;
   }

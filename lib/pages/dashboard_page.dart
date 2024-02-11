@@ -25,15 +25,10 @@ class _DashboardPageState extends State<DashboardPage> {
     Provider.of<ExerciseData>(context, listen: false)
         .initialiseExerciseInstances(); // For Pie Chart
     Provider.of<PerformedWorkoutData>(context, listen: false).loadHeatMap();
-    print(Provider.of<PerformedWorkoutData>(context, listen: false)
-        .completedWorkoutDates);
   }
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 

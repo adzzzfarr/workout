@@ -51,58 +51,69 @@ class BodyPartsChart extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: PieChart(
-                    PieChartData(
-                      sections: getPieChartSectionData(bodyPartSets),
-                      centerSpaceRadius: screenWidth /
-                          7.5, //If you have a padding widget around the PieChart, make sure to set PieChartData.centerSpaceRadius to double.infinity
-                      borderData: FlBorderData(
-                        show: true,
-                        border: Border.all(color: Colors.black, width: 0.5),
+            child: bodyPartSets.isNotEmpty
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: PieChart(
+                          PieChartData(
+                            sections: getPieChartSectionData(bodyPartSets),
+                            centerSpaceRadius: screenWidth /
+                                7.5, //If you have a padding widget around the PieChart, make sure to set PieChartData.centerSpaceRadius to double.infinity
+                            borderData: FlBorderData(
+                              show: true,
+                              border:
+                                  Border.all(color: Colors.black, width: 0.5),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                              top: screenHeight / 20, left: screenWidth / 25),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (var bodyPart in sortedBySets.keys)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      height: screenHeight / 70,
+                                      width: screenWidth / 35,
+                                      color: getColor(bodyPart),
+                                    ),
+                                    SizedBox(width: screenWidth / 65),
+                                    Text(
+                                      bodyPart,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: screenHeight / 55,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              SizedBox(height: screenHeight / 15),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Center(
+                    child: Text(
+                      'No Sets Performed.',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: screenHeight / 45,
                       ),
                     ),
                   ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        top: screenHeight / 20, left: screenWidth / 25),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (var bodyPart in sortedBySets.keys)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Container(
-                                height: screenHeight / 70,
-                                width: screenWidth / 35,
-                                color: getColor(bodyPart),
-                              ),
-                              SizedBox(width: screenWidth / 65),
-                              Text(
-                                bodyPart,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: screenHeight / 55,
-                                ),
-                              ),
-                            ],
-                          ),
-                        SizedBox(height: screenHeight / 15),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/date_time.dart';
+import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
+import 'package:workout/models/exercise.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/pages/completed_workout_page.dart';
 

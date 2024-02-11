@@ -59,7 +59,6 @@ class ExerciseTile extends StatelessWidget {
     } else if (workoutType == 'performed') {
       return ListTile(
         title: Text(exercise.name),
-        tileColor: exercise.isCompleted ? Colors.green : null,
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -78,7 +77,7 @@ class ExerciseTile extends StatelessWidget {
           ],
         ),
         trailing: Checkbox(
-          value: exercise.isCompleted,
+          value: true,
           onChanged: (value) => onCheckboxChanged!(value!),
         ),
       );
