@@ -63,8 +63,10 @@ class TemplateWorkoutCard extends StatelessWidget {
                 noOfExercises > 1 || noOfExercises == 0
                     ? '${noOfExercises.toString()} Exercises'
                     : '${noOfExercises.toString()} Exercise',
-                style:
-                    TextStyle(color: Colors.white, fontSize: screenHeight / 55),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: screenHeight / 55,
+                ),
               ),
               trailing: const Icon(Icons.arrow_forward_ios),
             ),

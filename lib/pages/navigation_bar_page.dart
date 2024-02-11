@@ -34,9 +34,9 @@ class _NavigationBarPageState extends State<NavigationBarPage> {
   int selectedIndex = 1;
 
   final screens = const [
-    WorkoutHistoryPage(),
-    DashboardPage(),
     ExerciseListPage(isAddingExerciseToTemplateWorkout: false),
+    DashboardPage(),
+    WorkoutHistoryPage(),
   ];
 
   @override
@@ -53,9 +53,9 @@ class _NavigationBarPageState extends State<NavigationBarPage> {
         key: navigationKey,
         index: selectedIndex,
         items: const [
-          Icon(Icons.history_rounded),
-          Icon(Icons.dashboard_rounded),
           Icon(Icons.fitness_center_rounded),
+          Icon(Icons.dashboard_rounded),
+          Icon(Icons.history_rounded),
         ],
         height: 50,
         onTap: (index) => setState(() {

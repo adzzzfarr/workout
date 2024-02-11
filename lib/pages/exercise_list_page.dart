@@ -5,6 +5,7 @@ import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/exercise.dart';
 import 'package:workout/models/template_workout.dart';
 import 'package:workout/pages/exercise_page.dart';
+import 'package:workout/widgets/exercise_list_page_tile.dart';
 import '../data/performed_workout_data.dart';
 
 class ExerciseListPage extends StatefulWidget {
@@ -52,46 +53,46 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
         body: exerciseNameList.isNotEmpty
             ? Builder(
                 builder: (context) => ListView.builder(
-                  itemCount: exerciseNameList.length,
-                  itemBuilder: (context, index) => Dismissible(
-                    key: Key(value.exerciseList[index].name),
-                    onDismissed: (direction) {
-                      Exercise deletedExercise = value.exerciseList[index];
-                      int deletedExerciseIndex = index;
+                    itemCount: exerciseNameList.length,
+                    itemBuilder: (context, index) => ExerciseListPageTile(
+                          exercise: value.exerciseList[index],
+                          tileKey: Key(value.exerciseList[index].name),
+                          onTilePressed: () => widget
+                                  .isAddingExerciseToTemplateWorkout
+                              ? showInputSetsDialog(
+                                  context,
+                                  widget.addToThisTemplateWorkout!,
+                                  value.exerciseList.firstWhere((element) =>
+                                      element.name == exerciseNameList[index]))
+                              : goToExercisePage(exerciseNameList[index]),
+                          onDismissed: (direction) {
+                            Exercise deletedExercise =
+                                value.exerciseList[index];
+                            int deletedExerciseIndex = index;
 
-                      deleteExercise(deletedExercise.name);
-                      setState(() {
-                        exerciseNameList = getAllExerciseNames();
-                      });
+                            deleteExercise(deletedExercise.name);
+                            setState(() {
+                              exerciseNameList = getAllExerciseNames();
+                            });
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${deletedExercise.name} deleted'),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () {
-                              undoDeleteExercise(
-                                  deletedExercise, deletedExerciseIndex);
-                              setState(() {
-                                exerciseNameList = getAllExerciseNames();
-                              });
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    child: MaterialButton(
-                      onPressed: () => widget.isAddingExerciseToTemplateWorkout
-                          ? showInputSetsDialog(
-                              context,
-                              widget.addToThisTemplateWorkout!,
-                              value.exerciseList.firstWhere((element) =>
-                                  element.name == exerciseNameList[index]))
-                          : goToExercisePage(exerciseNameList[index]),
-                      child: Text(exerciseNameList[index]),
-                    ),
-                  ),
-                ),
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('${deletedExercise.name} deleted'),
+                                action: SnackBarAction(
+                                  label: 'Undo',
+                                  onPressed: () {
+                                    undoDeleteExercise(
+                                        deletedExercise, deletedExerciseIndex);
+                                    setState(() {
+                                      exerciseNameList = getAllExerciseNames();
+                                    });
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        )),
               )
             : const Text('No exercises found.'),
       ),
@@ -107,6 +108,7 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
   }
 
   void goToExercisePage(String exerciseName) {
+    print('Pressing tile');
     Navigator.push(
         context,
         MaterialPageRoute(
