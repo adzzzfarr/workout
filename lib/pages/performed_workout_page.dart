@@ -62,7 +62,7 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
                     ? finishWorkout()
                     : ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text('Please mark all sets as completed.'))),
-                icon: const Icon(Icons.flag),
+                icon: const Icon(Icons.done_all),
               ),
             ],
           ),

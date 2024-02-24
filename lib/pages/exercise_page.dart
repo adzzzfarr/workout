@@ -71,42 +71,18 @@ class _ExercisePageState extends State<ExercisePage> {
                     ),
                   ),
                 ),
-                /*
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    child: Text(
-                        '${dateTimeToYYYYMMDD(dates[0])} in ${performedWorkoutNames[0]}'),
-                  ),
-                ), 
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: exerciseInstancesData.length,
-                    itemBuilder: (context, index) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (var setEntry in convertToSetsList(setData[index]))
-                          Row(
-                            children: [
-                              Text('Set ${setEntry['set'].toString()}: '),
-                              Text(
-                                  '${setEntry['weight'].toString()} KG, ${setEntry['reps'].toString()} Reps'),
-                            ],
-                          ),
-                      ],
-                    ),
-                    separatorBuilder: (context, index) {
-                      int indexPlusOne = index + 1;
-                      return Text(
-                          '${dateTimeToYYYYMMDD(dates[indexPlusOne])} in ${performedWorkoutNames[indexPlusOne]}');
-                    },
-                  ),
-                ), */
               ],
             );
           } else {
-            return const Text('No exercise data');
+            return Center(
+              child: Text(
+                'No exercise data.',
+                style: TextStyle(
+                  fontSize: screenHeight / 40,
+                  color: Colors.white,
+                ),
+              ),
+            );
           }
         },
       ),
