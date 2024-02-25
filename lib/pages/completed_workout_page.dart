@@ -22,43 +22,48 @@ class _CompletedWorkoutPageState extends State<CompletedWorkoutPage> {
 
     return Consumer<PerformedWorkoutData>(
       builder: (context, value, child) => Scaffold(
-        appBar: AppBar(
-          title: Text(widget.completedWorkout.name),
-        ),
+        appBar: AppBar(),
         body: Builder(
           builder: (context) {
             return Stack(
               children: [
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
                       padding: EdgeInsets.only(
                         top: screenHeight / 100,
                         bottom: screenHeight / 100,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            getFormattedDate(dateTimeToYYYYMMDD(
-                                widget.completedWorkout.date)),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: screenHeight / 45,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: screenWidth / 25),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.completedWorkout.name,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenHeight / 35,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            height: screenHeight / 200,
-                          ),
-                          Text(
-                            widget.completedWorkout.getFormattedDuration(),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: screenHeight / 45,
+                            Text(
+                              getFormattedDate(dateTimeToYYYYMMDD(
+                                  widget.completedWorkout.date)),
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.75),
+                                fontSize: screenHeight / 47.5,
+                              ),
                             ),
-                          ),
-                        ],
+                            Text(
+                              widget.completedWorkout.getFormattedDuration(),
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.75),
+                                fontSize: screenHeight / 47.5,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     Expanded(

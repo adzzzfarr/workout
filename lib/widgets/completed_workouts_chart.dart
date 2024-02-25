@@ -5,7 +5,9 @@ import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/models/performed_workout.dart';
 
 class CompletedWorkoutsChart extends StatelessWidget {
-  const CompletedWorkoutsChart({super.key});
+  final void Function() onTapped;
+
+  const CompletedWorkoutsChart({required this.onTapped, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,142 +28,146 @@ class CompletedWorkoutsChart extends StatelessWidget {
         .reversed
         .toList();
 
-    return Card(
-      color: HSLColor.fromColor(colorScheme.background)
-          .withLightness(0.2)
-          .toColor(),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: Colors.grey[600]!,
-          width: 0.5,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(
-              left: screenWidth / 17.5,
-              top: screenHeight / 55,
-            ),
-            child: Text(
-              'Workouts Per Week',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: screenHeight / 37.5,
-              ),
-            ),
+    return GestureDetector(
+      onTap: () => onTapped(),
+      child: Card(
+        color: HSLColor.fromColor(colorScheme.background)
+            .withLightness(0.2)
+            .toColor(),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Colors.grey[600]!,
+            width: 0.5,
           ),
-          Expanded(
-            child: Padding(
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
               padding: EdgeInsets.only(
-                left: screenWidth / 20,
-                right: screenWidth / 20,
+                left: screenWidth / 17.5,
                 top: screenHeight / 55,
-                bottom: screenHeight / 110,
               ),
-              child: BarChart(
-                BarChartData(
-                  titlesData: FlTitlesData(
-                    topTitles: AxisTitles(sideTitles: SideTitles()),
-                    leftTitles: AxisTitles(sideTitles: SideTitles()),
-                    rightTitles: AxisTitles(sideTitles: SideTitles()),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: screenHeight / 15,
-                        getTitlesWidget: (value, meta) {
-                          int index = value.toInt();
-                          if (index >= 0 && index < 4) {
-                            DateTime startDate = lastFourWeeks[index];
-                            DateTime endDate =
-                                startDate.add(const Duration(days: 6));
+              child: Text(
+                'Workouts Per Week',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: screenHeight / 37.5,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: screenWidth / 20,
+                  right: screenWidth / 20,
+                  top: screenHeight / 55,
+                  bottom: screenHeight / 110,
+                ),
+                child: BarChart(
+                  BarChartData(
+                    titlesData: FlTitlesData(
+                      topTitles: AxisTitles(sideTitles: SideTitles()),
+                      leftTitles: AxisTitles(sideTitles: SideTitles()),
+                      rightTitles: AxisTitles(sideTitles: SideTitles()),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: screenHeight / 15,
+                          getTitlesWidget: (value, meta) {
+                            int index = value.toInt();
+                            if (index >= 0 && index < 4) {
+                              DateTime startDate = lastFourWeeks[index];
+                              DateTime endDate =
+                                  startDate.add(const Duration(days: 6));
 
-                            return Padding(
-                              padding: EdgeInsets.only(top: screenHeight / 175),
-                              child: SizedBox(
-                                width: screenWidth / 5,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 3),
-                                      child: Text(
-                                        '${startDate.day}/${startDate.month} -',
-                                        style: TextStyle(
-                                          color: colorScheme.onBackground,
+                              return Padding(
+                                padding:
+                                    EdgeInsets.only(top: screenHeight / 175),
+                                child: SizedBox(
+                                  width: screenWidth / 5,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 3),
+                                        child: Text(
+                                          '${startDate.day}/${startDate.month} -',
+                                          style: TextStyle(
+                                            color: colorScheme.onBackground,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Text(
-                                      '${endDate.day}/${endDate.month}',
-                                      style: TextStyle(
-                                          color: colorScheme.onBackground),
-                                    )
-                                  ],
+                                      Text(
+                                        '${endDate.day}/${endDate.month}',
+                                        style: TextStyle(
+                                            color: colorScheme.onBackground),
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          }
-                          return const Text('Error');
-                        },
+                              );
+                            }
+                            return const Text('Error');
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border.all(color: Colors.grey, width: 0.5),
-                  ),
-                  barGroups: List.generate(
-                    4,
-                    (index) {
-                      int count = weeklyCounts[index];
+                    borderData: FlBorderData(
+                      show: true,
+                      border: Border.all(color: Colors.grey, width: 0.5),
+                    ),
+                    barGroups: List.generate(
+                      4,
+                      (index) {
+                        int count = weeklyCounts[index];
 
-                      return BarChartGroupData(
-                        x: index,
-                        barRods: List.generate(
-                          1,
-                          (index) => BarChartRodData(
-                            borderRadius: BorderRadius.circular(2.5),
-                            toY: 7,
-                            color: Colors.transparent,
-                            width: screenWidth / 8.25,
-                            rodStackItems: [
-                              for (int i = 0; i < count; i++)
-                                BarChartRodStackItem(
-                                    i.toDouble(),
-                                    i + 1,
-                                    const Color.fromARGB(255, 9, 103, 137),
-                                    const BorderSide(
-                                      color: Colors.grey,
-                                      width: 0.3,
-                                    ))
-                            ],
+                        return BarChartGroupData(
+                          x: index,
+                          barRods: List.generate(
+                            1,
+                            (index) => BarChartRodData(
+                              borderRadius: BorderRadius.circular(2.5),
+                              toY: 7,
+                              color: Colors.transparent,
+                              width: screenWidth / 8.25,
+                              rodStackItems: [
+                                for (int i = 0; i < count; i++)
+                                  BarChartRodStackItem(
+                                      i.toDouble(),
+                                      i + 1,
+                                      const Color.fromARGB(255, 9, 103, 137),
+                                      const BorderSide(
+                                        color: Colors.grey,
+                                        width: 0.3,
+                                      ))
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  gridData: FlGridData(
-                    show: true,
-                    drawHorizontalLine: true,
-                    drawVerticalLine: false,
-                    horizontalInterval: 1,
-                    checkToShowHorizontalLine: (value) => true,
-                    getDrawingHorizontalLine: (value) {
-                      if (value == 0) {
-                        return FlLine(color: Colors.black, strokeWidth: 3);
-                      }
-                      return FlLine(
-                          color: const Color(0xff37434d), strokeWidth: 0.5);
-                    },
+                        );
+                      },
+                    ),
+                    gridData: FlGridData(
+                      show: true,
+                      drawHorizontalLine: true,
+                      drawVerticalLine: false,
+                      horizontalInterval: 1,
+                      checkToShowHorizontalLine: (value) => true,
+                      getDrawingHorizontalLine: (value) {
+                        if (value == 0) {
+                          return FlLine(color: Colors.black, strokeWidth: 3);
+                        }
+                        return FlLine(
+                            color: const Color(0xff37434d), strokeWidth: 0.5);
+                      },
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

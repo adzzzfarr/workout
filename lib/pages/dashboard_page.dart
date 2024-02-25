@@ -3,11 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
+import 'package:workout/pages/calendar_page.dart';
 import 'package:workout/widgets/body_parts_chart.dart';
 import 'package:workout/pages/template_workout_list_page.dart';
 import 'package:workout/widgets/common_button.dart';
 import 'package:workout/widgets/completed_workouts_chart.dart';
-import 'package:workout/widgets/heat_map.dart';
+import 'package:workout/widgets/heat_map_calendar.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -24,7 +25,6 @@ class _DashboardPageState extends State<DashboardPage> {
         .initialiseCompletedWorkoutList(); // For HeatMap
     Provider.of<ExerciseData>(context, listen: false)
         .initialiseExerciseInstances(); // For Pie Chart
-    Provider.of<PerformedWorkoutData>(context, listen: false).loadHeatMap();
   }
 
   @override
@@ -51,19 +51,19 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                   SizedBox(height: screenHeight / 60),
                   SizedBox(
-                      height: screenHeight / 2.5,
-                      width: screenWidth - 30,
-                      child: const CompletedWorkoutsChart()),
+                    height: screenHeight / 2.5,
+                    width: screenWidth - 30,
+                    child: CompletedWorkoutsChart(
+                      onTapped: () => goToCalendarPage(),
+                    ),
+                  ),
                   SizedBox(height: screenHeight / 70),
                   SizedBox(
                     height: screenHeight / 2.7,
                     width: screenWidth - 30,
                     child: const BodyPartsChart(),
                   ),
-                  WorkoutHeatMap(
-                    datasets: Provider.of<PerformedWorkoutData>(context)
-                        .heatMapDataSet,
-                  ),
+                  SizedBox(height: screenHeight / 70),
                 ],
               ),
             ],
@@ -78,6 +78,15 @@ class _DashboardPageState extends State<DashboardPage> {
       context,
       MaterialPageRoute(
         builder: (context) => const TemplateWorkoutListPage(),
+      ),
+    );
+  }
+
+  void goToCalendarPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CalendarPage(),
       ),
     );
   }
