@@ -11,6 +11,8 @@ import 'package:workout/pages/exercise_page.dart';
 import 'package:workout/pages/performed_workout_page.dart';
 import 'package:workout/widgets/template_workout_exercise_tile.dart';
 
+final setNumberFormKey = GlobalKey<FormState>();
+
 class TemplateWorkoutPage extends StatefulWidget {
   final String workoutName;
 
@@ -33,6 +35,11 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Consumer<TemplateWorkoutData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
@@ -62,7 +69,7 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
                 tileKey: Key(value
                     .getIntendedTemplateWorkout(widget.workoutName)
                     .exercises[index]
-                    .name), // TODO: Make sure user cannot add an exercise that is already in the workout
+                    .name),
                 onTilePressed: () => goToExercisePage(value
                     .getIntendedTemplateWorkout(widget.workoutName)
                     .exercises[index]
@@ -85,9 +92,18 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('${deletedExercise.name} deleted.'),
+                      content: Text(
+                        '${deletedExercise.name} deleted.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: screenHeight / 50,
+                        ),
+                      ),
+                      backgroundColor: colorScheme.error,
+                      elevation: 10,
                       action: SnackBarAction(
                         label: 'Undo',
+                        textColor: Colors.white,
                         onPressed: () => undoDeleteExercise(
                           widget.workoutName,
                           deletedExercise,
@@ -123,16 +139,21 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
           exerciseName!,
           style: const TextStyle(color: Colors.white),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: setsController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(hintText: "Sets"),
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
+        content: Form(
+          key: setNumberFormKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: setsController,
+                validator: (value) => setNumberValidator(value),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: false),
+                decoration: const InputDecoration(hintText: "Sets"),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
         actions: [
           MaterialButton(
@@ -141,8 +162,10 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
           ),
           MaterialButton(
             onPressed: () {
-              if (sets != null) {
-                saveEditedExercise(exerciseName, sets);
+              setNumberFormKey.currentState!.validate();
+
+              if (setNumberFormKey.currentState!.validate()) {
+                saveEditedExercise(exerciseName, sets!);
               }
             },
             child: const Text('Save'),
@@ -231,5 +254,14 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
         builder: (context) => ExercisePage(exerciseName: exerciseName),
       ),
     );
+  }
+
+  String? setNumberValidator(String? inputSetNumber) {
+    if (inputSetNumber == null ||
+        inputSetNumber.isEmpty ||
+        int.parse(inputSetNumber) < 1) {
+      return 'At least 1 set must be performed';
+    }
+    return null;
   }
 }

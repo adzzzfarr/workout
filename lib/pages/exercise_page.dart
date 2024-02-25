@@ -79,7 +79,7 @@ class _ExercisePageState extends State<ExercisePage> {
                 'No exercise data.',
                 style: TextStyle(
                   fontSize: screenHeight / 40,
-                  color: Colors.white,
+                  color: Colors.white.withOpacity(0.5),
                 ),
               ),
             );

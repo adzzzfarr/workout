@@ -85,7 +85,7 @@ class TemplateWorkoutExerciseTile extends StatelessWidget {
                   Text(
                     exercise.getSetsList().length > 1
                         ? '${exercise.getSetsList().length} Sets'
-                        : '${exercise.getSetsList().length} Set', //TODO: Make sure user does not enter 0 sets
+                        : '${exercise.getSetsList().length} Set',
                     style: TextStyle(
                         color: Colors.white, fontSize: screenHeight / 60),
                   ),

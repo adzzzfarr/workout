@@ -7,12 +7,15 @@ import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/performed_workout.dart';
+import 'package:workout/pages/exercise_list_page.dart';
 import 'package:workout/pages/navigation_bar_page.dart';
 import 'package:workout/widgets/common_button.dart';
-import 'package:workout/widgets/exercise_tile.dart';
+
 import 'package:workout/widgets/performed_workout_exercise_tile.dart';
 
 import '../models/exercise.dart';
+
+final setDetailsFormKey = GlobalKey<FormState>();
 
 class PerformedWorkoutPage extends StatefulWidget {
   final PerformedWorkout performedWorkout;
@@ -49,6 +52,11 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Consumer<PerformedWorkoutData>(
       builder: (context, value, child) => WillPopScope(
         onWillPop: () => showConfirmCancelWorkoutDialog(),
@@ -60,8 +68,19 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
               IconButton(
                 onPressed: () => allExercisesCompleted(widget.performedWorkout)
                     ? finishWorkout()
-                    : ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Please mark all sets as completed.'))),
+                    : ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Please mark all sets as completed.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: screenHeight / 50,
+                            ),
+                          ),
+                          backgroundColor: colorScheme.primary,
+                          elevation: 10,
+                        ),
+                      ),
                 icon: const Icon(Icons.done_all),
               ),
             ],
@@ -83,55 +102,63 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
                                   widget.performedWorkout.date,
                                   widget.performedWorkout.name),
                           itemBuilder: (context, index) => Builder(
-                              builder: (context) =>
-                                  PerformedWorkoutExerciseTile(
-                                    exercise: value
-                                        .getIntendedPerformedWorkout(
-                                            widget.performedWorkout.date,
-                                            widget.performedWorkout.name)!
-                                        .exercises[index],
-                                    onEditSet: (exerciseName, setNumber) =>
-                                        showSetDetailsDialog(
-                                      exerciseName,
-                                      setNumber,
-                                      {
-                                        setNumber: value
-                                            .getIntendedPerformedWorkout(
-                                                widget.performedWorkout.date,
-                                                widget.performedWorkout.name)!
-                                            .exercises[index]
-                                            .setWeightReps![setNumber]
-                                      },
-                                    ),
-                                    onCheckboxChanged: (val, setNumber) {
-                                      setDataIsValid(
-                                        value
-                                            .getIntendedPerformedWorkout(
-                                                widget.performedWorkout.date,
-                                                widget.performedWorkout.name)!
-                                            .exercises[index]
-                                            .name,
-                                        setNumber,
+                            builder: (context) => PerformedWorkoutExerciseTile(
+                              exercise: value
+                                  .getIntendedPerformedWorkout(
+                                      widget.performedWorkout.date,
+                                      widget.performedWorkout.name)!
+                                  .exercises[index],
+                              onEditSet: (exerciseName, setNumber) =>
+                                  showSetDetailsDialog(
+                                exerciseName,
+                                setNumber,
+                                {
+                                  setNumber: value
+                                      .getIntendedPerformedWorkout(
+                                          widget.performedWorkout.date,
+                                          widget.performedWorkout.name)!
+                                      .exercises[index]
+                                      .setWeightReps![setNumber]
+                                },
+                              ),
+                              onCheckboxChanged: (val, setNumber) {
+                                setDataIsValid(
+                                  value
+                                      .getIntendedPerformedWorkout(
+                                          widget.performedWorkout.date,
+                                          widget.performedWorkout.name)!
+                                      .exercises[index]
+                                      .name,
+                                  setNumber,
+                                )
+                                    ? setState(
+                                        () => toggleSetCompletion(
+                                          value
+                                              .getIntendedPerformedWorkout(
+                                                  widget.performedWorkout.date,
+                                                  widget.performedWorkout.name)!
+                                              .exercises[index]
+                                              .name,
+                                          setNumber,
+                                        ),
                                       )
-                                          ? setState(
-                                              () => toggleSetCompletion(
-                                                value
-                                                    .getIntendedPerformedWorkout(
-                                                        widget.performedWorkout
-                                                            .date,
-                                                        widget.performedWorkout
-                                                            .name)!
-                                                    .exercises[index]
-                                                    .name,
-                                                setNumber,
-                                              ),
-                                            )
-                                          : ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                                  content: Text(
-                                                      'Perform at least one rep.')));
-                                    },
-                                  )),
+                                    : ScaffoldMessenger.of(context)
+                                        .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Perform at least one rep.',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: screenHeight / 50,
+                                            ),
+                                          ),
+                                          backgroundColor: colorScheme.primary,
+                                          elevation: 10,
+                                        ),
+                                      );
+                              },
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -204,29 +231,29 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
           'Edit Set $setNumber Details',
           style: const TextStyle(color: Colors.white),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: weightController,
-              decoration: InputDecoration(
-                  hintText: "Weight",
-                  errorText:
-                      validateWeight(double.parse(weightController.text)),
-                  errorStyle: const TextStyle(color: Colors.white)),
-              style: const TextStyle(color: Colors.white),
-            ),
-            TextField(
-              controller: repsController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                  hintText: "Reps",
-                  errorText: validateReps(int.parse(repsController.text)),
-                  errorStyle: const TextStyle(color: Colors.white)),
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
+        content: Form(
+          key: setDetailsFormKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: weightController,
+                validator: (value) => weightValidator(value),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(hintText: "Weight"),
+                style: const TextStyle(color: Colors.white),
+              ),
+              TextFormField(
+                controller: repsController,
+                validator: (value) => repsValidator(value),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: false),
+                decoration: const InputDecoration(hintText: "Reps"),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
         actions: [
           MaterialButton(
@@ -235,7 +262,11 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
           ),
           MaterialButton(
             onPressed: () {
-              saveEditedSet(exerciseName, setNumber);
+              setDetailsFormKey.currentState!.validate();
+
+              if (setDetailsFormKey.currentState!.validate()) {
+                saveEditedSet(exerciseName, setNumber);
+              }
             },
             child: const Text('Save'),
           ),
@@ -581,16 +612,18 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     return true;
   }
 
-  String? validateWeight(double weight) {
-    if (weight < 0) {
+  String? weightValidator(String? weight) {
+    print(weight);
+    if (weight == null || weight.isEmpty || double.parse(weight) < 0) {
       return 'Please input a valid weight.';
     }
     return null;
   }
 
-  String? validateReps(int reps) {
-    if (reps <= 0) {
-      return 'Please input a valid rep count.';
+  String? repsValidator(String? reps) {
+    print(reps);
+    if (reps == null || reps.isEmpty || int.parse(reps) < 1) {
+      return 'At least 1 rep must be performed.';
     }
     return null;
   }

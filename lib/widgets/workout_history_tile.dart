@@ -6,13 +6,11 @@ class WorkoutHistoryTile extends StatelessWidget {
   final PerformedWorkout completedWorkout;
   final Key tileKey;
   final void Function() onTilePressed;
-  final void Function(DismissDirection direction) onDismissed;
 
   const WorkoutHistoryTile({
     required this.completedWorkout,
     required this.tileKey,
     required this.onTilePressed,
-    required this.onDismissed,
     super.key,
   });
 
@@ -61,47 +59,43 @@ class WorkoutHistoryTile extends StatelessWidget {
         SizedBox(height: screenHeight / 450),
         GestureDetector(
           onTap: () => onTilePressed(),
-          child: Dismissible(
-            key: tileKey,
-            onDismissed: (direction) => onDismissed(direction),
-            child: Card(
-              color: HSLColor.fromColor(colorScheme.background)
-                  .withLightness(0.2)
-                  .toColor(),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: Colors.grey[600]!,
-                  width: 0.5,
+          child: Card(
+            color: HSLColor.fromColor(colorScheme.background)
+                .withLightness(0.2)
+                .toColor(),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(
+                color: Colors.grey[600]!,
+                width: 0.5,
+              ),
+            ),
+            child: ListTile(
+              contentPadding: EdgeInsets.only(
+                top: screenHeight / 75,
+                bottom: screenHeight / 75,
+                left: screenWidth / 20,
+                right: screenWidth / 30,
+              ),
+              title: Text(
+                completedWorkout.name,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: screenHeight / 45,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              child: ListTile(
-                contentPadding: EdgeInsets.only(
-                  top: screenHeight / 75,
-                  bottom: screenHeight / 75,
-                  left: screenWidth / 20,
-                  right: screenWidth / 30,
-                ),
-                title: Text(
-                  completedWorkout.name,
+              subtitle: Padding(
+                padding: EdgeInsets.only(top: screenHeight / 400),
+                child: Text(
+                  completedWorkout.getFormattedDuration(),
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: screenHeight / 45,
-                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: screenHeight / 52.5,
                   ),
                 ),
-                subtitle: Padding(
-                  padding: EdgeInsets.only(top: screenHeight / 400),
-                  child: Text(
-                    completedWorkout.getFormattedDuration(),
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
-                      fontSize: screenHeight / 52.5,
-                    ),
-                  ),
-                ),
-                trailing: const Icon(Icons.arrow_forward_ios),
               ),
+              trailing: const Icon(Icons.arrow_forward_ios),
             ),
           ),
         ),

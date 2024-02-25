@@ -6,6 +6,8 @@ import 'package:workout/widgets/template_workout_card.dart';
 
 import '../models/template_workout.dart';
 
+final newTemplateWorkoutFormKey = GlobalKey<FormState>();
+
 class TemplateWorkoutListPage extends StatefulWidget {
   const TemplateWorkoutListPage({super.key});
 
@@ -27,6 +29,11 @@ class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Consumer<TemplateWorkoutData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
@@ -47,8 +54,7 @@ class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
                     name: value.templateWorkoutList[index].name,
                     noOfExercises:
                         value.templateWorkoutList[index].exercises.length,
-                    cardKey: Key(value.templateWorkoutList[index]
-                        .name), //TODO: Make sure user cannot add a workout that has the same name
+                    cardKey: Key(value.templateWorkoutList[index].name),
                     onPressed: () => goToTemplateWorkoutPage(
                         value.templateWorkoutList[index].name),
                     onDismissed: (direction) {
@@ -60,9 +66,18 @@ class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('${deletedWorkout.name} deleted.'),
+                          content: Text(
+                            '${deletedWorkout.name} deleted.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: screenHeight / 50,
+                            ),
+                          ),
+                          backgroundColor: colorScheme.error,
+                          elevation: 10,
                           action: SnackBarAction(
                             label: 'Undo',
+                            textColor: Colors.white,
                             onPressed: () => undoDeleteTemplateWorkout(
                                 deletedWorkout, deletedWorkoutIndex),
                           ),
@@ -103,10 +118,14 @@ class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
         content: SizedBox(
           height: screenHeight / 15,
           width: screenWidth - 50,
-          child: TextField(
-            controller: newTemplateWorkoutNameController,
-            decoration: const InputDecoration(hintText: 'Workout Name'),
-            style: const TextStyle(color: Colors.white),
+          child: Form(
+            key: newTemplateWorkoutFormKey,
+            child: TextFormField(
+              controller: newTemplateWorkoutNameController,
+              validator: (value) => templateWorkoutNameValidator(value),
+              decoration: const InputDecoration(hintText: 'Workout Name'),
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
         ),
         actions: [
@@ -115,7 +134,13 @@ class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
             child: const Text('Cancel'),
           ),
           MaterialButton(
-            onPressed: saveNewTemplateWorkout,
+            onPressed: () {
+              newTemplateWorkoutFormKey.currentState!.validate();
+
+              if (newTemplateWorkoutFormKey.currentState!.validate()) {
+                saveNewTemplateWorkout();
+              }
+            },
             child: const Text('Save'),
           ),
         ],
@@ -156,5 +181,19 @@ class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
         builder: (context) => TemplateWorkoutPage(workoutName: workoutName),
       ),
     );
+  }
+
+  String? templateWorkoutNameValidator(String? inputWorkoutName) {
+    final workoutNames = Provider.of<TemplateWorkoutData>(context)
+        .templateWorkoutList
+        .map((e) => e.name)
+        .toList();
+
+    if (inputWorkoutName == null || inputWorkoutName.isEmpty) {
+      return 'Please enter a workout name.';
+    } else if (workoutNames.contains(inputWorkoutName)) {
+      return 'Workout already exists.';
+    }
+    return null;
   }
 }

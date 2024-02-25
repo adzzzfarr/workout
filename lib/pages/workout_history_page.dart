@@ -26,6 +26,9 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Consumer<PerformedWorkoutData>(
@@ -43,25 +46,6 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                         '${value.completedWorkoutList[index].name}${value.completedWorkoutList[index].date}'),
                     onTilePressed: () => goToCompletedWorkoutPage(
                         value.completedWorkoutList[index]),
-                    onDismissed: (direction) {
-                      PerformedWorkout deletedWorkout =
-                          value.completedWorkoutList[index];
-                      int deletedWorkoutIndex = index;
-
-                      deleteCompletedWorkout(
-                          deletedWorkout.name, deletedWorkout.date);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${deletedWorkout.name} deleted.'),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () => undoDeleteCompletedWorkout(
-                                deletedWorkout, deletedWorkoutIndex),
-                          ),
-                        ),
-                      );
-                    },
                   ),
                 ),
               )
@@ -76,17 +60,6 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
               ),
       ),
     );
-  }
-
-  void deleteCompletedWorkout(String workoutName, DateTime workoutDate) {
-    Provider.of<PerformedWorkoutData>(context, listen: false)
-        .deleteCompletedWorkout(workoutName, workoutDate);
-  }
-
-  void undoDeleteCompletedWorkout(
-      PerformedWorkout deletedWorkout, int deletedWorkoutIndex) {
-    Provider.of<PerformedWorkoutData>(context, listen: false)
-        .addCompletedWorkoutAtIndex(deletedWorkout, deletedWorkoutIndex);
   }
 
   void goToCompletedWorkoutPage(PerformedWorkout completedWorkout) {

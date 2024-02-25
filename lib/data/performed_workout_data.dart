@@ -170,23 +170,6 @@ class PerformedWorkoutData extends ChangeNotifier {
     return intendedWorkout != null ? intendedWorkout.exercises.length : 0;
   }
 
-  void deleteCompletedWorkout(String workoutName, DateTime workoutDate) {
-    completedWorkoutList.removeWhere((workout) =>
-        workout.name == workoutName && workout.date == workoutDate);
-
-    notifyListeners();
-    db.saveCompletedWorkoutsToDatabase(completedWorkoutList);
-  }
-
-  // ONLY for undoing deletion of a completed workout
-  void addCompletedWorkoutAtIndex(
-      PerformedWorkout completedWorkout, int index) {
-    completedWorkoutList.insert(index, completedWorkout);
-
-    notifyListeners();
-    db.saveCompletedWorkoutsToDatabase(completedWorkoutList);
-  }
-
   Map<DateTime, int> heatMapDataSet = {};
 
   String getStartDate() {

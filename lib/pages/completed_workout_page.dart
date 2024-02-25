@@ -4,7 +4,6 @@ import 'package:workout/data/date_time.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/widgets/completed_workout_exercise_tile.dart';
-import 'package:workout/widgets/exercise_tile.dart';
 
 class CompletedWorkoutPage extends StatefulWidget {
   final PerformedWorkout completedWorkout;
