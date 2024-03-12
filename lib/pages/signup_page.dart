@@ -24,62 +24,86 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       body: SingleChildScrollView(
-        child: Expanded(
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: screenHeight / 5,
+            bottom: screenHeight / 4,
+          ),
           child: Column(
             children: [
-              const Icon(
-                Icons.fitness_center,
-                size: 100,
+              Icon(
+                Icons.fitness_center_rounded,
+                size: screenHeight / 5,
+                color: colorScheme.primary,
               ),
-              const SizedBox(height: 75),
-              const Text(
-                'Hello!',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              SizedBox(height: screenHeight / 200),
+              Text(
+                'Hi there!',
+                style: TextStyle(
+                  letterSpacing: 1,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontSize: screenHeight / 30,
+                ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: screenHeight / 50),
               FormContainer(
                 controller: nameController,
                 hintText: 'Name',
                 isPasswordField: false,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: screenHeight / 80),
               FormContainer(
                 controller: emailController,
                 hintText: 'Email',
                 isPasswordField: false,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: screenHeight / 80),
               FormContainer(
                 controller: passwordController,
                 hintText: 'Password',
                 isPasswordField: true,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: screenHeight / 50),
               isSigningUp
                   ? const CircularProgressIndicator()
                   : CommonButton(
-                      height: 100,
-                      width: 100,
+                      height: screenHeight / 15,
+                      width: screenWidth - 20,
                       text: 'Sign Up',
                       onPressed: () => signUp(),
                     ),
+              SizedBox(height: screenHeight / 50),
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Already have an account?'),
+                  Text(
+                    'Already have an account? ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: screenHeight / 50,
+                    ),
+                  ),
                   GestureDetector(
                     onTap: () => Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const LogInPage(),
-                        ),
+                            builder: (context) => const LogInPage()),
                         (route) => false),
-                    child: const Text(
+                    child: Text(
                       'Log in now.',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.blue,
+                        fontSize: screenHeight / 50,
                       ),
                     ),
                   )

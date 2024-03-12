@@ -55,7 +55,7 @@ class _FormContainerState extends State<FormContainer> {
             border: OutlineInputBorder(
                 borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(10)),
-            contentPadding: EdgeInsets.all(8),
+            contentPadding: EdgeInsets.all(screenHeight / 100),
             filled: true,
             hintText: widget.hintText,
             suffixIcon: widget.isPasswordField == true
