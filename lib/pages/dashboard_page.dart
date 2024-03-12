@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
+import 'package:workout/pages/calendar_page.dart';
 import 'package:workout/widgets/body_parts_chart.dart';
 import 'package:workout/pages/template_workout_list_page.dart';
+import 'package:workout/widgets/common_button.dart';
 import 'package:workout/widgets/completed_workouts_chart.dart';
-import 'package:workout/widgets/heat_map.dart';
+import 'package:workout/widgets/heat_map_calendar.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -23,13 +25,13 @@ class _DashboardPageState extends State<DashboardPage> {
         .initialiseCompletedWorkoutList(); // For HeatMap
     Provider.of<ExerciseData>(context, listen: false)
         .initialiseExerciseInstances(); // For Pie Chart
-    Provider.of<PerformedWorkoutData>(context, listen: false).loadHeatMap();
-    print(Provider.of<PerformedWorkoutData>(context, listen: false)
-        .completedWorkoutDates);
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Consumer<TemplateWorkoutData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
@@ -40,29 +42,28 @@ class _DashboardPageState extends State<DashboardPage> {
             children: [
               Column(
                 children: [
-                  MaterialButton(
-                      child: const Text('Start A Workout'),
-                      onPressed: () => goToTemplateWorkoutsListPage()),
-                  const SizedBox(
-                    height: 300,
-                    width: 750,
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: CompletedWorkoutsChart(),
+                  SizedBox(height: screenHeight / 60),
+                  CommonButton(
+                    height: screenHeight / 15,
+                    width: screenWidth - 30,
+                    text: 'Start Workout',
+                    onPressed: () => goToTemplateWorkoutsListPage(),
+                  ),
+                  SizedBox(height: screenHeight / 60),
+                  SizedBox(
+                    height: screenHeight / 2.5,
+                    width: screenWidth - 30,
+                    child: CompletedWorkoutsChart(
+                      onTapped: () => goToCalendarPage(),
                     ),
                   ),
-                  const SizedBox(
-                    height: 500,
-                    width: 500,
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: BodyPartsChart(),
-                    ),
+                  SizedBox(height: screenHeight / 70),
+                  SizedBox(
+                    height: screenHeight / 2.7,
+                    width: screenWidth - 30,
+                    child: const BodyPartsChart(),
                   ),
-                  WorkoutHeatMap(
-                    datasets: Provider.of<PerformedWorkoutData>(context)
-                        .heatMapDataSet,
-                  ),
+                  SizedBox(height: screenHeight / 70),
                 ],
               ),
             ],
@@ -77,6 +78,15 @@ class _DashboardPageState extends State<DashboardPage> {
       context,
       MaterialPageRoute(
         builder: (context) => const TemplateWorkoutListPage(),
+      ),
+    );
+  }
+
+  void goToCalendarPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CalendarPage(),
       ),
     );
   }

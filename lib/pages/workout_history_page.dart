@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/date_time.dart';
+import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
+import 'package:workout/models/exercise.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/pages/completed_workout_page.dart';
+import 'package:workout/widgets/workout_history_tile.dart';
 
 class WorkoutHistoryPage extends StatefulWidget {
   const WorkoutHistoryPage({super.key});
@@ -23,6 +26,11 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Consumer<PerformedWorkoutData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
@@ -30,79 +38,28 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
         ),
         body: value.completedWorkoutList.isNotEmpty
             ? Builder(
-                builder: (context) => Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Text(dateTimeToYYYYMMDD(
-                            value.completedWorkoutList[0].date)),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: value.completedWorkoutList.length,
-                        itemBuilder: (context, index) => Builder(
-                          builder: (context) => Dismissible(
-                            key: Key(value.completedWorkoutList[index].name),
-                            onDismissed: (direction) {
-                              PerformedWorkout deletedWorkout =
-                                  value.completedWorkoutList[index];
-                              int deletedWorkoutIndex = index;
-
-                              deleteCompletedWorkout(deletedWorkout.name);
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content:
-                                      Text('${deletedWorkout.name} deleted.'),
-                                  action: SnackBarAction(
-                                    label: 'Undo',
-                                    onPressed: () => undoDeleteCompletedWorkout(
-                                        deletedWorkout, deletedWorkoutIndex),
-                                  ),
-                                ),
-                              );
-                            },
-                            child: ListTile(
-                              title:
-                                  Text(value.completedWorkoutList[index].name),
-                              subtitle: Text(value.completedWorkoutList[index]
-                                  .getFormattedDuration()),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.arrow_forward_ios),
-                                onPressed: () => goToCompletedWorkoutPage(
-                                    value.completedWorkoutList[index]),
-                              ),
-                            ),
-                          ),
-                        ),
-                        separatorBuilder: (context, index) {
-                          int indexPlusOne = index + 1;
-                          return Text(dateTimeToYYYYMMDD(
-                              value.completedWorkoutList[indexPlusOne].date));
-                        },
-                      ),
-                    ),
-                  ],
+                builder: (context) => ListView.builder(
+                  itemCount: value.completedWorkoutList.length,
+                  itemBuilder: (context, index) => WorkoutHistoryTile(
+                    completedWorkout: value.completedWorkoutList[index],
+                    tileKey: Key(
+                        '${value.completedWorkoutList[index].name}${value.completedWorkoutList[index].date}'),
+                    onTilePressed: () => goToCompletedWorkoutPage(
+                        value.completedWorkoutList[index]),
+                  ),
                 ),
               )
-            : const Text('No completed workouts.'),
+            : Center(
+                child: Text(
+                  'No completed workouts.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: screenHeight / 45,
+                  ),
+                ),
+              ),
       ),
     );
-  }
-
-  void deleteCompletedWorkout(String workoutName) {
-    Provider.of<PerformedWorkoutData>(context, listen: false)
-        .deleteCompletedWorkout(workoutName);
-  }
-
-  void undoDeleteCompletedWorkout(
-      PerformedWorkout deletedWorkout, int deletedWorkoutIndex) {
-    Provider.of<PerformedWorkoutData>(context, listen: false)
-        .addCompletedWorkoutAtIndex(deletedWorkout, deletedWorkoutIndex);
   }
 
   void goToCompletedWorkoutPage(PerformedWorkout completedWorkout) {

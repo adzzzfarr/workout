@@ -12,16 +12,17 @@ class Exercise extends HiveObject {
   // 1: [10.0, 10] => Set 1 was performed with 10.0kg for 10 reps
 
   @HiveField(2)
-  final BodyPart bodyPart;
+  final Map<int, bool>? setsCompletion;
+  // 1: true => Set 1 is completed
 
   @HiveField(3)
-  bool isCompleted;
+  final BodyPart bodyPart;
 
   Exercise({
     required this.name,
     required this.setWeightReps,
+    required this.setsCompletion,
     required this.bodyPart,
-    this.isCompleted = false,
   });
 
   List<Map<String, dynamic>> getSetsList() {

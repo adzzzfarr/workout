@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:workout/themes/dark_theme.dart';
 import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
@@ -46,9 +47,10 @@ class MyApp extends StatelessWidget {
           create: (context) => ExerciseData(),
         ),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: NavigationBarPage(),
+        theme: darkTheme,
+        home: const NavigationBarPage(),
       ),
     );
   }

@@ -1,10 +1,9 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/date_time.dart';
 import 'package:workout/data/exercise_data.dart';
 import 'package:workout/models/performed_workout.dart';
+import 'package:workout/widgets/exercise_page_tile.dart';
 
 import '../data/performed_workout_data.dart';
 
@@ -28,6 +27,9 @@ class _ExercisePageState extends State<ExercisePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     Map<DateTime, List<dynamic>>? exerciseInstancesData =
         getExerciseInstancesData(widget.exerciseName);
 
@@ -46,42 +48,41 @@ class _ExercisePageState extends State<ExercisePage> {
                 values.map((e) => e[1] as Map<int, List<dynamic>>).toList();
 
             return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    child: Text(
-                        '${dateTimeToYYYYMMDD(dates[0])} in ${performedWorkoutNames[0]}'),
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: screenHeight / 100,
+                    bottom: screenHeight / 100,
+                    left: screenWidth / 25,
                   ),
+                  child: Text('Exercise History',
+                      style: TextStyle(
+                          color: Colors.white, fontSize: screenHeight / 37.5)),
                 ),
                 Expanded(
-                  child: ListView.separated(
+                  child: ListView.builder(
                     itemCount: exerciseInstancesData.length,
-                    itemBuilder: (context, index) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (var setEntry in convertToSetsList(setData[index]))
-                          Row(
-                            children: [
-                              Text('Set ${setEntry['set'].toString()}: '),
-                              Text(
-                                  '${setEntry['weight'].toString()} KG, ${setEntry['reps'].toString()} Reps'),
-                            ],
-                          ),
-                      ],
+                    itemBuilder: (context, index) => Builder(
+                      builder: (context) => ExercisePageTile(
+                          dateTime: dates[index],
+                          workoutName: performedWorkoutNames[index],
+                          setsList: convertToSetsList(setData[index])),
                     ),
-                    separatorBuilder: (context, index) {
-                      int indexPlusOne = index + 1;
-                      return Text(
-                          '${dateTimeToYYYYMMDD(dates[indexPlusOne])} in ${performedWorkoutNames[indexPlusOne]}');
-                    },
                   ),
                 ),
               ],
             );
           } else {
-            return const Text('No exercise data');
+            return Center(
+              child: Text(
+                'No exercise data.',
+                style: TextStyle(
+                  fontSize: screenHeight / 40,
+                  color: Colors.white.withOpacity(0.5),
+                ),
+              ),
+            );
           }
         },
       ),
@@ -114,7 +115,6 @@ class _ExercisePageState extends State<ExercisePage> {
     if (dateWorkoutSetData.isEmpty) {
       return null;
     }
-    print(dateWorkoutSetData);
     return dateWorkoutSetData;
   }
 

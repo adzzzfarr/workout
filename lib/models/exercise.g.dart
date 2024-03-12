@@ -20,8 +20,8 @@ class ExerciseAdapter extends TypeAdapter<Exercise> {
       name: fields[0] as String,
       setWeightReps: (fields[1] as Map?)?.map((dynamic k, dynamic v) =>
           MapEntry(k as int, (v as List).cast<dynamic>())),
-      bodyPart: fields[2] as BodyPart,
-      isCompleted: fields[3] as bool,
+      setsCompletion: (fields[2] as Map?)?.cast<int, bool>(),
+      bodyPart: fields[3] as BodyPart,
     );
   }
 
@@ -34,9 +34,9 @@ class ExerciseAdapter extends TypeAdapter<Exercise> {
       ..writeByte(1)
       ..write(obj.setWeightReps)
       ..writeByte(2)
-      ..write(obj.bodyPart)
+      ..write(obj.setsCompletion)
       ..writeByte(3)
-      ..write(obj.isCompleted);
+      ..write(obj.bodyPart);
   }
 
   @override

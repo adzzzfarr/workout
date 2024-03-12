@@ -7,8 +7,11 @@ import 'package:workout/models/exercise.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/models/template_workout.dart';
 import 'package:workout/pages/exercise_list_page.dart';
+import 'package:workout/pages/exercise_page.dart';
 import 'package:workout/pages/performed_workout_page.dart';
-import 'package:workout/widgets/exercise_tile.dart';
+import 'package:workout/widgets/template_workout_exercise_tile.dart';
+
+final setNumberFormKey = GlobalKey<FormState>();
 
 class TemplateWorkoutPage extends StatefulWidget {
   final String workoutName;
@@ -32,6 +35,11 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Consumer<TemplateWorkoutData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
@@ -54,22 +62,27 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
           builder: (context) => ListView.builder(
             itemCount: value.getNumberOfExercises(widget.workoutName),
             itemBuilder: (context, index) => Builder(
-              builder: (context) => ExerciseTile(
-                workoutType: 'template',
+              builder: (context) => TemplateWorkoutExerciseTile(
                 exercise: value
                     .getIntendedTemplateWorkout(widget.workoutName)
                     .exercises[index],
-                onCheckboxChanged: null,
-                onEditSet: null,
-                onTilePressed: (exerciseName) => showExerciseDetailsDialog(
-                  exerciseName: exerciseName!,
+                tileKey: Key(value
+                    .getIntendedTemplateWorkout(widget.workoutName)
+                    .exercises[index]
+                    .name),
+                onTilePressed: () => goToExercisePage(value
+                    .getIntendedTemplateWorkout(widget.workoutName)
+                    .exercises[index]
+                    .name),
+                onEditPressed: (exerciseName) => showExerciseDetailsDialog(
+                  exerciseName: exerciseName,
                   sets: value
                       .getIntendedTemplateWorkout(widget.workoutName)
                       .exercises[index]
                       .setWeightReps!
                       .length,
                 ),
-                onDismissed: () {
+                onDismissed: (direction) {
                   Exercise deletedExercise = value
                       .getIntendedTemplateWorkout(widget.workoutName)
                       .exercises[index];
@@ -79,9 +92,18 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('${deletedExercise.name} deleted.'),
+                      content: Text(
+                        '${deletedExercise.name} deleted.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: screenHeight / 50,
+                        ),
+                      ),
+                      backgroundColor: colorScheme.error,
+                      elevation: 10,
                       action: SnackBarAction(
                         label: 'Undo',
+                        textColor: Colors.white,
                         onPressed: () => undoDeleteExercise(
                           widget.workoutName,
                           deletedExercise,
@@ -105,16 +127,33 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(exerciseName!),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: setsController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(hintText: "Sets"),
-            ),
-          ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Colors.grey[600]!,
+            width: 0.5,
+          ),
+        ),
+        elevation: 10,
+        title: Text(
+          exerciseName!,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Form(
+          key: setNumberFormKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: setsController,
+                validator: (value) => setNumberValidator(value),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: false),
+                decoration: const InputDecoration(hintText: "Sets"),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
         actions: [
           MaterialButton(
@@ -123,8 +162,10 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
           ),
           MaterialButton(
             onPressed: () {
-              if (sets != null) {
-                saveEditedExercise(exerciseName, sets);
+              setNumberFormKey.currentState!.validate();
+
+              if (setNumberFormKey.currentState!.validate()) {
+                saveEditedExercise(exerciseName, sets!);
               }
             },
             child: const Text('Save'),
@@ -204,5 +245,23 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
             addToThisTemplateWorkout: currentTemplateWorkout),
       ),
     );
+  }
+
+  void goToExercisePage(String exerciseName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExercisePage(exerciseName: exerciseName),
+      ),
+    );
+  }
+
+  String? setNumberValidator(String? inputSetNumber) {
+    if (inputSetNumber == null ||
+        inputSetNumber.isEmpty ||
+        int.parse(inputSetNumber) < 1) {
+      return 'At least 1 set must be performed';
+    }
+    return null;
   }
 }

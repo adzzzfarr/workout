@@ -5,9 +5,11 @@ import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/exercise.dart';
 import 'package:workout/models/template_workout.dart';
 import 'package:workout/pages/exercise_page.dart';
-import 'package:workout/pages/template_workout_page.dart';
+import 'package:workout/widgets/exercise_list_page_tile.dart';
 import '../data/performed_workout_data.dart';
-import '../models/performed_workout.dart';
+
+final setsFormKey = GlobalKey<FormState>();
+final exerciseDetailsFormKey = GlobalKey<FormState>();
 
 class ExerciseListPage extends StatefulWidget {
   final bool isAddingExerciseToTemplateWorkout;
@@ -40,6 +42,11 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+
     List<String> exerciseNameList = getAllExerciseNames();
 
     return Consumer<ExerciseData>(
@@ -54,46 +61,80 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
         body: exerciseNameList.isNotEmpty
             ? Builder(
                 builder: (context) => ListView.builder(
-                  itemCount: exerciseNameList.length,
-                  itemBuilder: (context, index) => Dismissible(
-                    key: Key(value.exerciseList[index].name),
-                    onDismissed: (direction) {
-                      Exercise deletedExercise = value.exerciseList[index];
-                      int deletedExerciseIndex = index;
+                    itemCount: exerciseNameList.length,
+                    itemBuilder: (context, index) => ExerciseListPageTile(
+                          exercise: value.exerciseList[index],
+                          tileKey: Key(value.exerciseList[index].name),
+                          onTilePressed: () {
+                            if (widget.isAddingExerciseToTemplateWorkout) {
+                              final exerciseNamesInWorkout = widget
+                                  .addToThisTemplateWorkout!.exercises
+                                  .map((e) => e.name)
+                                  .toList();
 
-                      deleteExercise(deletedExercise.name);
-                      setState(() {
-                        exerciseNameList = getAllExerciseNames();
-                      });
+                              if (!exerciseNamesInWorkout
+                                  .contains(exerciseNameList[index])) {
+                                showInputSetsDialog(
+                                    context,
+                                    widget.addToThisTemplateWorkout!,
+                                    value.exerciseList.firstWhere((element) =>
+                                        element.name ==
+                                        exerciseNameList[index]));
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Exercise already in workout.',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: screenHeight / 50,
+                                      ),
+                                    ),
+                                    backgroundColor: colorScheme.primary,
+                                    elevation: 10,
+                                  ),
+                                );
+                              }
+                            } else {
+                              goToExercisePage(exerciseNameList[index]);
+                            }
+                          },
+                          onDismissed: (direction) {
+                            Exercise deletedExercise =
+                                value.exerciseList[index];
+                            int deletedExerciseIndex = index;
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${deletedExercise.name} deleted'),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () {
-                              undoDeleteExercise(
-                                  deletedExercise, deletedExerciseIndex);
-                              setState(() {
-                                exerciseNameList = getAllExerciseNames();
-                              });
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    child: MaterialButton(
-                      onPressed: () => widget.isAddingExerciseToTemplateWorkout
-                          ? showInputSetsDialog(
-                              context,
-                              widget.addToThisTemplateWorkout!,
-                              value.exerciseList.firstWhere((element) =>
-                                  element.name == exerciseNameList[index]))
-                          : goToExercisePage(exerciseNameList[index]),
-                      child: Text(exerciseNameList[index]),
-                    ),
-                  ),
-                ),
+                            deleteExercise(deletedExercise.name);
+                            setState(() {
+                              exerciseNameList = getAllExerciseNames();
+                            });
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${deletedExercise.name} deleted',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: screenHeight / 50,
+                                  ),
+                                ),
+                                backgroundColor: colorScheme.error,
+                                elevation: 10,
+                                action: SnackBarAction(
+                                  label: 'Undo',
+                                  textColor: Colors.white,
+                                  onPressed: () {
+                                    undoDeleteExercise(
+                                        deletedExercise, deletedExerciseIndex);
+                                    setState(() {
+                                      exerciseNameList = getAllExerciseNames();
+                                    });
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        )),
               )
             : const Text('No exercises found.'),
       ),
@@ -121,10 +162,27 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Number of Sets"),
-        content: TextField(
-          controller: setsController,
-          keyboardType: TextInputType.number,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Colors.grey[600]!,
+            width: 0.5,
+          ),
+        ),
+        elevation: 10,
+        title: const Text(
+          "Number of Sets",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Form(
+          key: setsFormKey,
+          child: TextFormField(
+            controller: setsController,
+            validator: (value) => setsValidator(value),
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(hintText: "Sets"),
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
         actions: [
           MaterialButton(
@@ -132,23 +190,35 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
               Navigator.pop(context);
               setsController.clear();
             },
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
           MaterialButton(
             onPressed: () {
-              Provider.of<TemplateWorkoutData>(context, listen: false)
-                  .addExerciseToTemplateWorkout(
-                templateWorkout.name,
-                exercise.name,
-                exercise.bodyPart,
-                int.parse(setsController.text),
-              );
+              setsFormKey.currentState!.validate();
 
-              Navigator.of(context)
-                ..pop()
-                ..pop();
+              if (setsFormKey.currentState!.validate()) {
+                Provider.of<TemplateWorkoutData>(context, listen: false)
+                    .addExerciseToTemplateWorkout(
+                  templateWorkout.name,
+                  exercise.name,
+                  exercise.bodyPart,
+                  int.parse(setsController.text),
+                );
+
+                setsController.clear();
+
+                Navigator.of(context)
+                  ..pop()
+                  ..pop();
+              }
             },
-            child: const Text('Save'),
+            child: const Text(
+              'Save',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -162,43 +232,73 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("New Exercise"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: exerciseNameController,
-              decoration: const InputDecoration(hintText: "Exercise Name"),
-            ),
-            DropdownButtonFormField<BodyPart>(
-              value: selectedBodyPart,
-              items: BodyPart.values
-                  .map(
-                    (element) => DropdownMenuItem<BodyPart>(
-                      value: element,
-                      child: Text(formatBodyPart(element)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) => setState(() {
-                selectedBodyPart = value;
-              }),
-              onSaved: (newValue) => setState(() {
-                selectedBodyPart = newValue;
-              }),
-            )
-          ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Colors.grey[600]!,
+            width: 0.5,
+          ),
+        ),
+        elevation: 10,
+        title: const Text(
+          "New Exercise",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Form(
+          key: exerciseDetailsFormKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: exerciseNameController,
+                decoration: const InputDecoration(hintText: "Exercise Name"),
+                style: const TextStyle(color: Colors.white),
+                validator: (value) => exerciseNameValidator(value),
+              ),
+              DropdownButtonFormField<BodyPart>(
+                value: selectedBodyPart,
+                items: BodyPart.values
+                    .map(
+                      (element) => DropdownMenuItem<BodyPart>(
+                        value: element,
+                        child: Text(
+                          formatBodyPart(element),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                validator: (value) => bodyPartValidator(value),
+                onChanged: (value) => setState(() {
+                  selectedBodyPart = value;
+                }),
+                onSaved: (newValue) => setState(() {
+                  selectedBodyPart = newValue;
+                }),
+              )
+            ],
+          ),
         ),
         actions: [
           MaterialButton(
             onPressed: cancelEdit,
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
           MaterialButton(
             onPressed: () {
-              saveNewExercise();
+              exerciseDetailsFormKey.currentState!.validate();
+
+              if (exerciseDetailsFormKey.currentState!.validate()) {
+                saveNewExercise();
+              }
             },
-            child: const Text('Save'),
+            child: const Text(
+              'Save',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -208,27 +308,12 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
   void saveNewExercise() {
     String newExerciseName = exerciseNameController.text;
 
-    if (exerciseNameController.text.isNotEmpty && selectedBodyPart != null) {
-      Provider.of<ExerciseData>(context, listen: false)
-          .addExerciseToExerciseList(newExerciseName, selectedBodyPart!);
+    Provider.of<ExerciseData>(context, listen: false)
+        .addExerciseToExerciseList(newExerciseName, selectedBodyPart!);
 
-      Navigator.pop(context);
-      exerciseNameController.clear();
+    Navigator.pop(context);
 
-      setState(() {});
-    } else if (exerciseNameController.text.isNotEmpty &&
-        selectedBodyPart == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a body part.')));
-    } else if (exerciseNameController.text.isEmpty &&
-        selectedBodyPart != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please input an exercise name.')));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content:
-              Text('Please input an exercise name and select a body part.')));
-    }
+    setState(() {});
   }
 
   void cancelEdit() {
@@ -264,5 +349,33 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
       case BodyPart.fullBody:
         return 'Full Body';
     }
+  }
+
+  String? setsValidator(String? inputSets) {
+    if (inputSets == null || inputSets.isEmpty || int.parse(inputSets) < 1) {
+      return 'At least 1 set must be performed.';
+    }
+    return null;
+  }
+
+  String? exerciseNameValidator(String? inputName) {
+    final exerciseNames = Provider.of<ExerciseData>(context)
+        .exerciseList
+        .map((e) => e.name)
+        .toList();
+
+    if (inputName == null || inputName.isEmpty) {
+      return 'Please enter an exercise name.';
+    } else if (exerciseNames.contains(inputName)) {
+      return 'Exercise already exists.';
+    }
+    return null;
+  }
+
+  String? bodyPartValidator(BodyPart? inputBodyPart) {
+    if (inputBodyPart == null) {
+      return 'Please select a body part.';
+    }
+    return null;
   }
 }
