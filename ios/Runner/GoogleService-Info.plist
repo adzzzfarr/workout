@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>162185465176-sjtkcvr5hme2qeoe48gat38u9gjvnqoi.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.162185465176-sjtkcvr5hme2qeoe48gat38u9gjvnqoi</string>
+	<key>API_KEY</key>
+	<string>AIzaSyC9uuBmWtZJTjEYg85OfXfvRyroe18CNys</string>
+	<key>GCM_SENDER_ID</key>
+	<string>162185465176</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.workout</string>
+	<key>PROJECT_ID</key>
+	<string>flutter-workout-97ae2</string>
+	<key>STORAGE_BUCKET</key>
+	<string>flutter-workout-97ae2.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:162185465176:ios:5fca82ed5bcec6e468692d</string>
+</dict>
+</plist>
