@@ -15,3 +15,5 @@ Functionality includes:
   - Users can time their rests
   - Dynamically change set data such as weight used and reps performed as you perform the workout
 - A list view of all past completed workouts, along with a calendar that reflects all of them over time.
+
+See a short demo at: https://www.youtube.com/watch?v=-4CuciuCJ4s
