@@ -19,17 +19,20 @@ class TemplateWorkoutAdapter extends TypeAdapter<TemplateWorkout> {
     return TemplateWorkout(
       name: fields[0] as String,
       exercises: (fields[1] as List).cast<Exercise>(),
+      templateWorkoutId: fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, TemplateWorkout obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
-      ..write(obj.exercises);
+      ..write(obj.exercises)
+      ..writeByte(2)
+      ..write(obj.templateWorkoutId);
   }
 
   @override

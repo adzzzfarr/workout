@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:workout/data/date_time.dart';
-import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
-import 'package:workout/models/exercise.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/pages/completed_workout_page.dart';
 import 'package:workout/widgets/workout_history_tile.dart';
@@ -26,9 +23,6 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Consumer<PerformedWorkoutData>(

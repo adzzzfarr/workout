@@ -4,8 +4,8 @@ import '../models/exercise.dart';
 
 class PerformedWorkoutExerciseTile extends StatelessWidget {
   final Exercise exercise;
-  final void Function(String exerciseName, int setNumber) onEditSet;
-  final void Function(bool boolValue, int setNumber) onCheckboxChanged;
+  final void Function(String exerciseName, String setNumber) onEditSet;
+  final void Function(bool boolValue, String setNumber) onCheckboxChanged;
 
   const PerformedWorkoutExerciseTile({
     required this.exercise,
@@ -58,7 +58,7 @@ class PerformedWorkoutExerciseTile extends StatelessWidget {
 
   Widget setWeightRepsTile(
     BuildContext context,
-    int setNumber,
+    String setNumber,
     double weight,
     int reps,
   ) {
@@ -71,7 +71,7 @@ class PerformedWorkoutExerciseTile extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'Set ${setNumber.toString()}: ',
+                'Set $setNumber: ',
                 style: TextStyle(
                   color: exercise.setsCompletion![setNumber]!
                       ? Colors.green

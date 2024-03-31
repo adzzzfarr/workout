@@ -1,17 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:workout/data/defaults.dart';
-import 'package:workout/data/hive_database.dart';
+import 'package:workout/database/hive_database.dart';
 import 'package:workout/models/exercise.dart';
 import 'package:workout/models/template_workout.dart';
-
+import 'package:uuid/uuid.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:workout/firebase/firestore_service.dart';
 import '../models/performed_workout.dart';
 
 class TemplateWorkoutData extends ChangeNotifier {
   final db = HiveDatabase();
+  final User? currentUser = FirebaseAuth.instance.currentUser;
 
   List<TemplateWorkout> templateWorkoutList = defaultTemplateWorkoutList;
 
-  void initialiseTemplateWorkoutList() {
+  Future<void> initialiseTemplateWorkoutList() async {
+    if (currentUser != null) {
+      final uid = currentUser!.uid;
+      final CollectionReference templateWorkoutsCollectionRef =
+          FirebaseFirestore.instance
+              .collection("users")
+              .doc(uid)
+              .collection("template-workouts");
+
+      final querySnapshot = await templateWorkoutsCollectionRef.get();
+      final templateWorkoutsInFirestore = querySnapshot.docs
+          .map((doc) => FirestoreService().readTemplateWorkoutFromSnapshot(
+              doc as DocumentSnapshot<Map<String, dynamic>>))
+          .toList();
+
+      if (templateWorkoutsInFirestore.isNotEmpty && !db.prevDataExists()) {
+        // Handles the case of a user reading existing cloud data for the first time on a new device
+        templateWorkoutList = templateWorkoutsInFirestore;
+        db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+        notifyListeners();
+      } else if (db.prevDataExists() &&
+          db.myBox.get('TEMPLATE_WORKOUTS') != null &&
+          (db.myBox.get('TEMPLATE_WORKOUTS') as List).isNotEmpty) {
+        // Handles the case of a user having logged in before and thus having their cloud data saved to local storage already, as in the 'if' block
+        templateWorkoutList = db.readTemplateWorkoutsFromDatabase();
+      } else {
+        // Handles the case of a user not having any existing cloud data nor local data
+        db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+
+        for (var templateWorkout in templateWorkoutList) {
+          FirestoreService().saveTemplateWorkoutToFirestore(templateWorkout);
+        }
+      }
+    }
+    throw (e) {
+      print("USER IS NULL.");
+    };
+    /*
     if (db.prevDataExists() &&
         db.myBox.get('TEMPLATE_WORKOUTS') != null &&
         (db.myBox.get('TEMPLATE_WORKOUTS') as List).isNotEmpty) {
@@ -27,6 +68,7 @@ class TemplateWorkoutData extends ChangeNotifier {
     }
 
     print('TemplateWorkoutList: $names');
+    */
   }
 
   int getNumberOfExercises(String workoutName) {
@@ -36,38 +78,47 @@ class TemplateWorkoutData extends ChangeNotifier {
   }
 
   void addWorkout(String name) {
-    templateWorkoutList.add(TemplateWorkout(name: name, exercises: []));
-    notifyListeners();
-    db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
-  }
-
-  void addExerciseToTemplateWorkout(
-    String workoutName,
-    String exerciseName,
-    BodyPart bodyPart,
-    int sets,
-  ) {
-    TemplateWorkout intendedWorkout = getIntendedTemplateWorkout(workoutName);
-
-    Map<int, List<dynamic>> setWeightReps = {};
-    Map<int, bool> setsCompletion = {};
-
-    for (int i = 1; i <= sets; i++) {
-      setWeightReps[i] = [0.0, 0];
-      setsCompletion[i] = false;
-    }
-
-    intendedWorkout.exercises.add(
-      Exercise(
-        name: exerciseName,
-        setWeightReps: setWeightReps,
-        setsCompletion: setsCompletion,
-        bodyPart: bodyPart,
+    templateWorkoutList.add(
+      TemplateWorkout(
+        name: name,
+        exercises: [],
+        templateWorkoutId: const Uuid().v4(),
       ),
     );
 
     notifyListeners();
     db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+    FirestoreService().saveTemplateWorkoutsToFirestore(templateWorkoutList);
+  }
+
+  void addExerciseToTemplateWorkout(
+    String workoutName,
+    Exercise exercise,
+    int sets,
+  ) {
+    TemplateWorkout intendedWorkout = getIntendedTemplateWorkout(workoutName);
+
+    Map<String, List<dynamic>> setWeightReps = {};
+    Map<String, bool> setsCompletion = {};
+
+    for (int i = 1; i <= sets; i++) {
+      setWeightReps[i.toString()] = [0.0, 0];
+      setsCompletion[i.toString()] = false;
+    }
+
+    intendedWorkout.exercises.add(
+      Exercise(
+        name: exercise.name,
+        setWeightReps: setWeightReps,
+        setsCompletion: setsCompletion,
+        bodyPart: exercise.bodyPart,
+        exerciseId: exercise.exerciseId,
+      ),
+    );
+
+    notifyListeners();
+    db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+    FirestoreService().saveTemplateWorkoutsToFirestore(templateWorkoutList);
   }
 
   void editExerciseInTemplateWorkout(
@@ -86,10 +137,11 @@ class TemplateWorkoutData extends ChangeNotifier {
           intendedWorkout.exercises[index].setWeightReps;
 
       if (editedNoOfSets < originalNoOfSets) {
-        editedSetWeightReps!.removeWhere((key, value) => key > editedNoOfSets);
+        editedSetWeightReps!
+            .removeWhere((key, value) => int.parse(key) > editedNoOfSets);
       } else if (editedNoOfSets > originalNoOfSets) {
         for (int i = originalNoOfSets + 1; i <= editedNoOfSets; i++) {
-          editedSetWeightReps![i] = [0.0, 0];
+          editedSetWeightReps![i.toString()] = [0.0, 0];
         }
       }
       // if editedNoOfSets == originalNoOfSets, there is no need to change setWeightReps
@@ -99,11 +151,13 @@ class TemplateWorkoutData extends ChangeNotifier {
         setWeightReps: editedSetWeightReps,
         setsCompletion: intendedWorkout.exercises[index].setsCompletion,
         bodyPart: intendedWorkout.exercises[index].bodyPart,
+        exerciseId: intendedWorkout.exercises[index].exerciseId,
       );
 
       intendedWorkout.exercises[index] = editedExercise;
       notifyListeners();
       db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+      FirestoreService().saveTemplateWorkoutsToFirestore(templateWorkoutList);
     }
   }
 
@@ -116,6 +170,7 @@ class TemplateWorkoutData extends ChangeNotifier {
 
     notifyListeners();
     db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+    FirestoreService().updateTemplateWorkoutInFirestore(intendedWorkout);
   }
 
   void addExerciseToTemplateWorkoutAtIndex(
@@ -125,11 +180,17 @@ class TemplateWorkoutData extends ChangeNotifier {
 
     notifyListeners();
     db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+    FirestoreService().saveTemplateWorkoutsToFirestore(templateWorkoutList);
   }
 
   void deleteWorkout(String workoutName) {
-    templateWorkoutList.removeWhere((workout) => workout.name == workoutName);
+    int index = templateWorkoutList
+        .indexWhere((element) => element.name == workoutName);
 
+    FirestoreService()
+        .deleteTemplateWorkoutFromFirestore(templateWorkoutList[index]);
+
+    templateWorkoutList.removeWhere((workout) => workout.name == workoutName);
     notifyListeners();
     db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
   }
@@ -139,6 +200,7 @@ class TemplateWorkoutData extends ChangeNotifier {
 
     notifyListeners();
     db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+    FirestoreService().saveTemplateWorkoutsToFirestore(templateWorkoutList);
   }
 
   void updateTemplateWorkout(PerformedWorkout completedWorkout) {
@@ -146,7 +208,15 @@ class TemplateWorkoutData extends ChangeNotifier {
         .indexWhere((element) => element.name == completedWorkout.name);
 
     templateWorkoutList[index] = TemplateWorkout(
-        name: completedWorkout.name, exercises: completedWorkout.exercises);
+      name: completedWorkout.name,
+      exercises: completedWorkout.exercises,
+      templateWorkoutId: templateWorkoutList[index].templateWorkoutId,
+    );
+
+    notifyListeners();
+    db.saveTemplateWorkoutsToDatabase(templateWorkoutList);
+    FirestoreService()
+        .updateTemplateWorkoutInFirestore(templateWorkoutList[index]);
   }
 
   TemplateWorkout getIntendedTemplateWorkout(String workoutName) {
@@ -160,9 +230,5 @@ class TemplateWorkoutData extends ChangeNotifier {
 
     return intendedWorkout.exercises
         .firstWhere((element) => element.name == exerciseName);
-  }
-
-  String getStartDate() {
-    return db.getStartDate();
   }
 }

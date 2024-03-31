@@ -123,7 +123,8 @@ class _SignUpPageState extends State<SignUpPage> {
       isSigningUp = true;
     });
 
-    String name = nameController.text.trim();
+    String name = nameController.text
+        .trim(); // TODO: Can store this and display on Dashboard if we want
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 

@@ -12,7 +12,7 @@ class FirebaseAuthService {
         password: password,
       );
       if (credential.user == null) {
-        print('user is null');
+        print('USER IS NULL.');
       }
       return credential.user;
     } on FirebaseAuthException catch (e) {

@@ -11,11 +11,10 @@ class HiveDatabase {
 
   bool prevDataExists() {
     if (myBox.isEmpty) {
-      print('Previous data does not exist.');
-      myBox.put("START_DATE", getTodayYYYYMMDD());
+      print('Previous local data does not exist.');
       return false;
     } else {
-      print('Previous data exists.');
+      print('Previous local data exists.');
       return true;
     }
   }
@@ -63,18 +62,10 @@ class HiveDatabase {
       (a, b) => b.date.compareTo(a.date),
     );
 
-    List names = [];
-    List durations = [];
-    for (var element in completedWorkouts) {
-      names.add(element.name);
-      durations.add(element.durationInSeconds);
-    }
-
-    print(
-        'I am saving these completed workouts: $names with corresponding durations: $durations');
     myBox.put("COMPLETED_WORKOUTS", completedWorkouts);
   }
 
+  /* Is this needed?
   void saveCompletedWorkoutDatesToDatabase(
       List<PerformedWorkout> completedWorkouts) {
     List<DateTime> dates = [];
@@ -83,17 +74,11 @@ class HiveDatabase {
     }
     myBox.put('COMPLETED_WORKOUT_DATES', dates);
   }
+  */
 
   void saveExercisesToDatabase(List<Exercise> exercises) {
     exercises.sort((a, b) => a.name.compareTo(b.name));
 
-    List names = [];
-    List indices = [];
-    for (int i = 0; i < exercises.length; i++) {
-      names.add(exercises[i].name);
-      indices.add(i);
-    }
-    print('I am reading these Exercises: $names with indices: $indices');
     myBox.put('EXERCISES', exercises);
   }
 
@@ -108,13 +93,6 @@ class HiveDatabase {
             .map((e) => e as TemplateWorkout)
             .toList();
 
-    List names = [];
-    for (var element in templateWorkouts) {
-      names.add(element.name);
-    }
-
-    print('I am reading these TemplateWorkouts: $names');
-
     return templateWorkouts;
   }
 
@@ -123,13 +101,6 @@ class HiveDatabase {
         (myBox.get('EXERCISES', defaultValue: []) as List<dynamic>)
             .map((e) => e as Exercise)
             .toList();
-
-    List names = [];
-    for (var element in exercises) {
-      names.add(element.name);
-    }
-
-    print('I am reading these Exercises: $names');
 
     return exercises;
   }
@@ -158,13 +129,6 @@ class HiveDatabase {
             .map((e) => e as PerformedWorkout)
             .toList();
 
-    List names = [];
-    for (var element in performedWorkouts) {
-      names.add(element.name);
-    }
-
-    print('I am reading these PerformedWorkouts: $names');
-
     return performedWorkouts;
   }
 
@@ -174,21 +138,10 @@ class HiveDatabase {
             .map((e) => e as PerformedWorkout)
             .toList();
 
-    List names = [];
-    List dates = [];
-    List durations = [];
-    for (var element in completedWorkouts) {
-      names.add(element.name);
-      durations.add(element.durationInSeconds);
-      dates.add(dateTimeToYYYYMMDD(element.date));
-    }
-
-    print(
-        'I am reading these CompletedWorkouts: $names with corresponding durations: $durations');
-
     return completedWorkouts;
   }
 
+  /* Is this needed?
   List<DateTime> readCompletedWorkoutDatesFromDatabase() {
     List<DateTime> dates = (myBox
             .get('COMPLETED_WORKOUT_DATES', defaultValue: []) as List<dynamic>)
@@ -197,6 +150,7 @@ class HiveDatabase {
 
     return dates;
   }
+  */
 
   int getCompletionStatus(String yyyymmdd) {
     int completionStatus =

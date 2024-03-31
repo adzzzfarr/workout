@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/pages/completed_workout_page.dart';
 import 'package:workout/widgets/heat_map_calendar.dart';
 import '../data/performed_workout_data.dart';
+import '../firebase/firestore_service.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -43,10 +45,19 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                 ),
               ),
-              WorkoutHeatMapCalendar(
-                datasets: value.heatMapDataSet,
-                onBlockTapped: (dateTime) =>
-                    goToCompletedExercisePage(dateTime),
+              StreamBuilder<QuerySnapshot>(
+                stream: FirestoreService().getCompletedWorkoutsStream(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else {
+                    return WorkoutHeatMapCalendar(
+                      datasets: value.heatMapDataSet,
+                      onBlockTapped: (dateTime) =>
+                          goToCompletedExercisePage(dateTime),
+                    );
+                  }
+                },
               ),
             ],
           ),

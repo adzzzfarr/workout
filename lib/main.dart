@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/firebase_options.dart';
+import 'package:workout/pages/navigation_bar_page.dart';
 import 'package:workout/themes/dark_theme.dart';
 import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
@@ -12,6 +13,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:workout/pages/login_page.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   await Hive.initFlutter();
@@ -47,6 +49,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -62,7 +66,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: darkTheme,
-        home: const LogInPage(),
+        home: user == null ? const LogInPage() : const NavigationBarPage(),
       ),
     );
   }

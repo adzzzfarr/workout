@@ -7,13 +7,9 @@ import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/models/performed_workout.dart';
-import 'package:workout/pages/exercise_list_page.dart';
-import 'package:workout/pages/navigation_bar_page.dart';
 import 'package:workout/widgets/common_button.dart';
-
+import 'package:workout/pages/navigation_bar_page.dart';
 import 'package:workout/widgets/performed_workout_exercise_tile.dart';
-
-import '../models/exercise.dart';
 
 final setDetailsFormKey = GlobalKey<FormState>();
 
@@ -56,6 +52,7 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     final colorScheme = theme.colorScheme;
 
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Consumer<PerformedWorkoutData>(
       builder: (context, value, child) => WillPopScope(
@@ -161,6 +158,11 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
                           ),
                         ),
                       ),
+                      CommonButton(
+                          height: screenHeight / 10,
+                          width: screenWidth / 2,
+                          text: 'Cancel Workout',
+                          onPressed: () => showConfirmCancelWorkoutDialog()),
                     ],
                   ),
                   buildBottomDrawer(context),
@@ -207,8 +209,8 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
 
   void showSetDetailsDialog(
     String exerciseName,
-    int setNumber,
-    Map<int, dynamic> setDetails,
+    String setNumber,
+    Map<String, dynamic> setDetails,
   ) {
     double? weight = setDetails[setNumber][0];
     int? reps = setDetails[setNumber][1];
@@ -282,7 +284,7 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     repsController.clear();
   }
 
-  void saveEditedSet(String exerciseName, int setNumber) {
+  void saveEditedSet(String exerciseName, String setNumber) {
     double weight = double.parse(weightController.text);
     int reps = int.parse(repsController.text);
 
@@ -303,13 +305,13 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
     }
   }
 
-  void toggleSetCompletion(String exerciseName, int setNumber) {
+  void toggleSetCompletion(String exerciseName, String setNumber) {
     Provider.of<PerformedWorkoutData>(context, listen: false)
         .toggleSetCompletion(widget.performedWorkout.date,
             widget.performedWorkout.name, exerciseName, setNumber);
   }
 
-  bool setDataIsValid(String exerciseName, int setNumber) {
+  bool setDataIsValid(String exerciseName, String setNumber) {
     return Provider.of<PerformedWorkoutData>(context, listen: false)
         .ensureValidSetData(widget.performedWorkout.date,
             widget.performedWorkout.name, exerciseName, setNumber);
@@ -613,7 +615,6 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
   }
 
   String? weightValidator(String? weight) {
-    print(weight);
     if (weight == null || weight.isEmpty || double.parse(weight) < 0) {
       return 'Please input a valid weight.';
     }
@@ -621,7 +622,6 @@ class _PerformedWorkoutPageState extends State<PerformedWorkoutPage> {
   }
 
   String? repsValidator(String? reps) {
-    print(reps);
     if (reps == null || reps.isEmpty || int.parse(reps) < 1) {
       return 'At least 1 rep must be performed.';
     }

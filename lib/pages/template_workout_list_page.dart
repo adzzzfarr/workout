@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/template_workout_data.dart';
+import 'package:workout/firebase/firestore_service.dart';
 import 'package:workout/pages/template_workout_page.dart';
 import 'package:workout/widgets/template_workout_card.dart';
 
@@ -43,52 +45,59 @@ class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
           onPressed: () => createNewTemplateWorkout(context),
           child: const Icon(Icons.add),
         ),
-        body: Builder(
-          builder: (context) => ListView(
-            children: [
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: value.templateWorkoutList.length,
-                itemBuilder: (context, index) => Builder(
-                  builder: (context) => TemplateWorkoutCard(
-                    name: value.templateWorkoutList[index].name,
-                    noOfExercises:
-                        value.templateWorkoutList[index].exercises.length,
-                    cardKey: Key(value.templateWorkoutList[index].name),
-                    onPressed: () => goToTemplateWorkoutPage(
-                        value.templateWorkoutList[index].name),
-                    onDismissed: (direction) {
-                      TemplateWorkout deletedWorkout =
-                          value.templateWorkoutList[index];
-                      int deletedWorkoutIndex = index;
+        body: StreamBuilder<QuerySnapshot>(
+          stream: FirestoreService().getTemplateWorkoutsStream(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            } else {
+              return ListView(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: value.templateWorkoutList.length,
+                    itemBuilder: (context, index) => Builder(
+                      builder: (context) => TemplateWorkoutCard(
+                        name: value.templateWorkoutList[index].name,
+                        noOfExercises:
+                            value.templateWorkoutList[index].exercises.length,
+                        cardKey: Key(value.templateWorkoutList[index].name),
+                        onPressed: () => goToTemplateWorkoutPage(
+                            value.templateWorkoutList[index].name),
+                        onDismissed: (direction) {
+                          TemplateWorkout deletedWorkout =
+                              value.templateWorkoutList[index];
+                          int deletedWorkoutIndex = index;
 
-                      deleteTemplateWorkout(deletedWorkout.name);
+                          deleteTemplateWorkout(deletedWorkout.name);
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${deletedWorkout.name} deleted.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: screenHeight / 50,
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${deletedWorkout.name} deleted.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: screenHeight / 50,
+                                ),
+                              ),
+                              backgroundColor: colorScheme.error,
+                              elevation: 10,
+                              action: SnackBarAction(
+                                label: 'Undo',
+                                textColor: Colors.white,
+                                onPressed: () => undoDeleteTemplateWorkout(
+                                    deletedWorkout, deletedWorkoutIndex),
+                              ),
                             ),
-                          ),
-                          backgroundColor: colorScheme.error,
-                          elevation: 10,
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            textColor: Colors.white,
-                            onPressed: () => undoDeleteTemplateWorkout(
-                                deletedWorkout, deletedWorkoutIndex),
-                          ),
-                        ),
-                      );
-                    },
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ),
+                ],
+              );
+            }
+          },
         ),
       ),
     );
@@ -184,10 +193,11 @@ class _TemplateWorkoutListPageState extends State<TemplateWorkoutListPage> {
   }
 
   String? templateWorkoutNameValidator(String? inputWorkoutName) {
-    final workoutNames = Provider.of<TemplateWorkoutData>(context)
-        .templateWorkoutList
-        .map((e) => e.name)
-        .toList();
+    final workoutNames =
+        Provider.of<TemplateWorkoutData>(context, listen: false)
+            .templateWorkoutList
+            .map((e) => e.name)
+            .toList();
 
     if (inputWorkoutName == null || inputWorkoutName.isEmpty) {
       return 'Please enter a workout name.';

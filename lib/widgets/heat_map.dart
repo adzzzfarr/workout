@@ -13,7 +13,6 @@ class WorkoutHeatMap extends StatelessWidget {
 
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    const spacing = 4.0;
 
     DateTime now = DateTime.now();
     DateTime startDate = getFirstDayOfMonth(now);

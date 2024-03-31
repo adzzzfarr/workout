@@ -21,9 +21,7 @@ class BodyPartsChart extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     final screenHeight = MediaQuery.of(context).size.height;
-    print('SCREENHEIGHT: $screenHeight');
     final screenWidth = MediaQuery.of(context).size.width;
-    print('SCREENWIDTH: $screenWidth');
 
     return Card(
       color: HSLColor.fromColor(colorScheme.background)
@@ -75,7 +73,7 @@ class BodyPartsChart extends StatelessWidget {
                         flex: 1,
                         child: Padding(
                           padding: EdgeInsets.only(
-                              top: screenHeight / 20, left: screenWidth / 25),
+                              top: screenHeight / 15, left: screenWidth / 25),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -177,7 +175,7 @@ class BodyPartsChart extends StatelessWidget {
       case 'Legs':
         return Colors.blue;
       case 'Core':
-        return Colors.yellow;
+        return Colors.blueGrey;
       case 'Full Body':
         return Colors.brown;
       default:

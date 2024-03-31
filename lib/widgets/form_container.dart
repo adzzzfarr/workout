@@ -51,11 +51,20 @@ class _FormContainerState extends State<FormContainer> {
         onSaved: widget.onSaved,
         validator: widget.validator,
         onFieldSubmitted: widget.onFieldSubmitted,
+        style: TextStyle(
+          fontSize: screenHeight / 40,
+          color: Colors.white,
+        ),
         decoration: InputDecoration(
             border: OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(10)),
-            contentPadding: EdgeInsets.all(screenHeight / 100),
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            contentPadding: EdgeInsets.only(
+              top: screenHeight / 75,
+              bottom: screenHeight / 75,
+              left: screenWidth / 25,
+            ),
             filled: true,
             hintText: widget.hintText,
             suffixIcon: widget.isPasswordField == true

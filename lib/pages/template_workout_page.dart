@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import 'package:workout/data/date_time.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
@@ -46,10 +47,33 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
           title: Text(widget.workoutName),
           actions: [
             MaterialButton(
-              onPressed: () => goToPerformedWorkoutPage(
-                value.templateWorkoutList.firstWhere(
-                    (element) => element.name == widget.workoutName),
-              ),
+              onPressed: () {
+                bool atLeastOneExercise = value.templateWorkoutList
+                    .firstWhere((element) => element.name == widget.workoutName)
+                    .exercises
+                    .isNotEmpty;
+
+                if (atLeastOneExercise) {
+                  goToPerformedWorkoutPage(
+                    value.templateWorkoutList.firstWhere(
+                        (element) => element.name == widget.workoutName),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Please add at least one exercise.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: screenHeight / 50,
+                        ),
+                      ),
+                      backgroundColor: colorScheme.primary,
+                      elevation: 10,
+                    ),
+                  );
+                }
+              },
               child: const Text('Start'),
             ),
           ],
@@ -214,8 +238,10 @@ class _TemplateWorkoutPageState extends State<TemplateWorkoutPage> {
     PerformedWorkout performedWorkout = PerformedWorkout(
       name: templateWorkout.name,
       exercises: List.from(templateWorkout.exercises),
+      templateWorkoutId: templateWorkout.templateWorkoutId,
       date: createDateTimeObj(getTodayYYYYMMDD()),
-      durationInSeconds: 0, // Change this
+      durationInSeconds: 0,
+      completedWorkoutId: const Uuid().v4(),
     );
 
     Provider.of<PerformedWorkoutData>(context, listen: false)

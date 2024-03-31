@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/exercise_data.dart';
@@ -7,6 +8,7 @@ import 'package:workout/models/template_workout.dart';
 import 'package:workout/pages/exercise_page.dart';
 import 'package:workout/widgets/exercise_list_page_tile.dart';
 import '../data/performed_workout_data.dart';
+import '../firebase/firestore_service.dart';
 
 final setsFormKey = GlobalKey<FormState>();
 final exerciseDetailsFormKey = GlobalKey<FormState>();
@@ -59,82 +61,88 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
           child: const Icon(Icons.add),
         ),
         body: exerciseNameList.isNotEmpty
-            ? Builder(
-                builder: (context) => ListView.builder(
-                    itemCount: exerciseNameList.length,
-                    itemBuilder: (context, index) => ExerciseListPageTile(
-                          exercise: value.exerciseList[index],
-                          tileKey: Key(value.exerciseList[index].name),
-                          onTilePressed: () {
-                            if (widget.isAddingExerciseToTemplateWorkout) {
-                              final exerciseNamesInWorkout = widget
-                                  .addToThisTemplateWorkout!.exercises
-                                  .map((e) => e.name)
-                                  .toList();
+            ? StreamBuilder<QuerySnapshot>(
+                stream: FirestoreService().getExercisesStream(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else {
+                    return ListView.builder(
+                      itemCount: exerciseNameList.length,
+                      itemBuilder: (context, index) => ExerciseListPageTile(
+                        exercise: value.exerciseList[index],
+                        tileKey: Key(value.exerciseList[index].name),
+                        onTilePressed: () {
+                          if (widget.isAddingExerciseToTemplateWorkout) {
+                            final exerciseNamesInWorkout = widget
+                                .addToThisTemplateWorkout!.exercises
+                                .map((e) => e.name)
+                                .toList();
 
-                              if (!exerciseNamesInWorkout
-                                  .contains(exerciseNameList[index])) {
-                                showInputSetsDialog(
-                                    context,
-                                    widget.addToThisTemplateWorkout!,
-                                    value.exerciseList.firstWhere((element) =>
-                                        element.name ==
-                                        exerciseNameList[index]));
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Exercise already in workout.',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: screenHeight / 50,
-                                      ),
-                                    ),
-                                    backgroundColor: colorScheme.primary,
-                                    elevation: 10,
-                                  ),
-                                );
-                              }
+                            if (!exerciseNamesInWorkout
+                                .contains(exerciseNameList[index])) {
+                              showInputSetsDialog(
+                                  context,
+                                  widget.addToThisTemplateWorkout!,
+                                  value.exerciseList.firstWhere((element) =>
+                                      element.name == exerciseNameList[index]));
                             } else {
-                              goToExercisePage(exerciseNameList[index]);
-                            }
-                          },
-                          onDismissed: (direction) {
-                            Exercise deletedExercise =
-                                value.exerciseList[index];
-                            int deletedExerciseIndex = index;
-
-                            deleteExercise(deletedExercise.name);
-                            setState(() {
-                              exerciseNameList = getAllExerciseNames();
-                            });
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '${deletedExercise.name} deleted',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: screenHeight / 50,
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Exercise already in workout.',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: screenHeight / 50,
+                                    ),
                                   ),
+                                  backgroundColor: colorScheme.primary,
+                                  elevation: 10,
                                 ),
-                                backgroundColor: colorScheme.error,
-                                elevation: 10,
-                                action: SnackBarAction(
-                                  label: 'Undo',
-                                  textColor: Colors.white,
-                                  onPressed: () {
-                                    undoDeleteExercise(
-                                        deletedExercise, deletedExerciseIndex);
-                                    setState(() {
-                                      exerciseNameList = getAllExerciseNames();
-                                    });
-                                  },
+                              );
+                            }
+                          } else {
+                            goToExercisePage(exerciseNameList[index]);
+                          }
+                        },
+                        onDismissed: (direction) {
+                          Exercise deletedExercise = value.exerciseList[index];
+                          int deletedExerciseIndex = index;
+
+                          deleteExercise(deletedExercise.name);
+                          setState(() {
+                            exerciseNameList = getAllExerciseNames();
+                          });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${deletedExercise.name} deleted',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: screenHeight / 50,
                                 ),
                               ),
-                            );
-                          },
-                        )),
+                              backgroundColor: colorScheme.error,
+                              elevation: 10,
+                              action: SnackBarAction(
+                                label: 'Undo',
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  undoDeleteExercise(
+                                      deletedExercise, deletedExerciseIndex);
+                                  setState(() {
+                                    exerciseNameList = getAllExerciseNames();
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }
+                },
               )
             : const Text('No exercises found.'),
       ),
@@ -203,8 +211,7 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
                 Provider.of<TemplateWorkoutData>(context, listen: false)
                     .addExerciseToTemplateWorkout(
                   templateWorkout.name,
-                  exercise.name,
-                  exercise.bodyPart,
+                  exercise,
                   int.parse(setsController.text),
                 );
 
@@ -359,7 +366,7 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
   }
 
   String? exerciseNameValidator(String? inputName) {
-    final exerciseNames = Provider.of<ExerciseData>(context)
+    final exerciseNames = Provider.of<ExerciseData>(context, listen: false)
         .exerciseList
         .map((e) => e.name)
         .toList();

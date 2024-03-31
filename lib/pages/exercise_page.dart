@@ -1,10 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:workout/data/date_time.dart';
 import 'package:workout/data/exercise_data.dart';
+import 'package:workout/firebase/firestore_service.dart';
 import 'package:workout/models/performed_workout.dart';
 import 'package:workout/widgets/exercise_page_tile.dart';
-
 import '../data/performed_workout_data.dart';
 
 class ExercisePage extends StatefulWidget {
@@ -44,34 +44,44 @@ class _ExercisePageState extends State<ExercisePage> {
             List<List<dynamic>> values = exerciseInstancesData.values.toList();
             List<String> performedWorkoutNames =
                 values.map((e) => e[0] as String).toList();
-            List<Map<int, List<dynamic>>> setData =
-                values.map((e) => e[1] as Map<int, List<dynamic>>).toList();
+            List<Map<String, List<dynamic>>> setData =
+                values.map((e) => e[1] as Map<String, List<dynamic>>).toList();
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: screenHeight / 100,
-                    bottom: screenHeight / 100,
-                    left: screenWidth / 25,
-                  ),
-                  child: Text('Exercise History',
-                      style: TextStyle(
-                          color: Colors.white, fontSize: screenHeight / 37.5)),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: exerciseInstancesData.length,
-                    itemBuilder: (context, index) => Builder(
-                      builder: (context) => ExercisePageTile(
-                          dateTime: dates[index],
-                          workoutName: performedWorkoutNames[index],
-                          setsList: convertToSetsList(setData[index])),
-                    ),
-                  ),
-                ),
-              ],
+            return StreamBuilder<QuerySnapshot>(
+              stream: FirestoreService().getExerciseInstancesStream(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                } else {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: screenHeight / 100,
+                          bottom: screenHeight / 100,
+                          left: screenWidth / 25,
+                        ),
+                        child: Text('Exercise History',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenHeight / 37.5)),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: exerciseInstancesData.length,
+                          itemBuilder: (context, index) => Builder(
+                            builder: (context) => ExercisePageTile(
+                                dateTime: dates[index],
+                                workoutName: performedWorkoutNames[index],
+                                setsList: convertToSetsList(setData[index])),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              },
             );
           } else {
             return Center(
@@ -119,7 +129,7 @@ class _ExercisePageState extends State<ExercisePage> {
   }
 
   List<Map<String, dynamic>> convertToSetsList(
-      Map<int, List<dynamic>> setWeightReps) {
+      Map<String, List<dynamic>> setWeightReps) {
     return setWeightReps.entries
         .map((entry) => {
               'set': entry.key,

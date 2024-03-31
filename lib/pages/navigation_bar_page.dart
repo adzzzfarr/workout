@@ -24,6 +24,7 @@ class _NavigationBarPageState extends State<NavigationBarPage> {
         .initialiseTemplateWorkoutList();
     Provider.of<PerformedWorkoutData>(context, listen: false)
         .initialiseCompletedWorkoutList();
+    Provider.of<PerformedWorkoutData>(context, listen: false).putStartDate();
     Provider.of<ExerciseData>(context, listen: false).initialiseExerciseList();
     Provider.of<ExerciseData>(context, listen: false)
         .initialiseExerciseInstances();

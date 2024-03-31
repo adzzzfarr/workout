@@ -49,7 +49,7 @@ class CompletedWorkoutExerciseTile extends StatelessWidget {
 
   Widget setWeightRepsTile(
     BuildContext context,
-    int setNumber,
+    String setNumber,
     double weight,
     int reps,
   ) {
@@ -62,7 +62,7 @@ class CompletedWorkoutExerciseTile extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'Set ${setNumber.toString()}: ',
+                'Set $setNumber: ',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.5),
                   fontSize: screenHeight / 52.5,

@@ -1,16 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout/data/exercise_data.dart';
 import 'package:workout/data/performed_workout_data.dart';
 import 'package:workout/data/template_workout_data.dart';
 import 'package:workout/firebase/firebase_auth_service.dart';
+import 'package:workout/firebase/firestore_service.dart';
 import 'package:workout/pages/calendar_page.dart';
 import 'package:workout/pages/login_page.dart';
 import 'package:workout/widgets/body_parts_chart.dart';
 import 'package:workout/pages/template_workout_list_page.dart';
 import 'package:workout/widgets/common_button.dart';
 import 'package:workout/widgets/completed_workouts_chart.dart';
-import 'package:workout/widgets/heat_map_calendar.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -53,22 +54,42 @@ class _DashboardPageState extends State<DashboardPage> {
                   CommonButton(
                     height: screenHeight / 15,
                     width: screenWidth - 30,
-                    text: 'Start Workout',
+                    text: 'View Template Workouts',
                     onPressed: () => goToTemplateWorkoutsListPage(),
                   ),
                   SizedBox(height: screenHeight / 60),
                   SizedBox(
                     height: screenHeight / 2.5,
                     width: screenWidth - 30,
-                    child: CompletedWorkoutsChart(
-                      onTapped: () => goToCalendarPage(),
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirestoreService().getCompletedWorkoutsStream(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else {
+                          return CompletedWorkoutsChart(
+                            onTapped: () => goToCalendarPage(),
+                          );
+                        }
+                      },
                     ),
                   ),
                   SizedBox(height: screenHeight / 70),
                   SizedBox(
-                    height: screenHeight / 2.7,
+                    height: screenHeight / 2.5,
                     width: screenWidth - 30,
-                    child: const BodyPartsChart(),
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirestoreService().getCompletedWorkoutsStream(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else {
+                          return const BodyPartsChart();
+                        }
+                      },
+                    ),
                   ),
                   SizedBox(height: screenHeight / 70),
                 ],

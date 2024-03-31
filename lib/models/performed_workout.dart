@@ -13,18 +13,16 @@ class PerformedWorkout extends TemplateWorkout {
   int durationInSeconds;
 
   @HiveField(5)
-  final bool isCompleted;
+  final String completedWorkoutId;
 
   PerformedWorkout({
-    required String name,
-    required List<Exercise> exercises,
+    required super.name,
+    required super.exercises,
+    required super.templateWorkoutId,
     required this.date,
     required this.durationInSeconds,
-    this.isCompleted = false,
-  }) : super(
-          name: name,
-          exercises: exercises,
-        );
+    required this.completedWorkoutId,
+  });
 
   String getFormattedDuration() {
     String twoDigits(int number) => number.toString().padLeft(2, '0');
@@ -38,6 +36,38 @@ class PerformedWorkout extends TemplateWorkout {
     } else {
       return '$minutes:$seconds';
     }
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    // Keys are the names of each exercise, Values are the json map of each exercise
+    /*
+    Map<String, dynamic> toJson() {
+    return {
+      'exerciseName': name,
+      'setWeightReps': setWeightReps,
+      'setsCompletion': setsCompletion,
+      'bodyPart': getFormattedBodyPart(bodyPart),
+      'exerciseId': exerciseId,
+    };
+  }
+    */
+
+    final Map<String, dynamic> exercisesMap = {};
+
+    for (var exercise in exercises) {
+      final Map<String, dynamic> exerciseJson = exercise.toJson();
+      exercisesMap[exercise.name] = exerciseJson;
+    }
+
+    return {
+      'performedWorkoutName': super.name,
+      'exercises': exercisesMap,
+      'templateWorkoutId': super.templateWorkoutId,
+      'date': date,
+      'durationInSeconds': durationInSeconds,
+      'completedWorkoutId': completedWorkoutId,
+    };
   }
 }
 
