@@ -2,7 +2,7 @@
 
 Workout Logging App built using Flutter, Hive, and Firebase.
 
-I created the app with a local-first software paradigm in mind; Hive Database to first handles all minor changes and saves them locally, before the final data is pushed to the Firebase Firestore cloud database tagged to a user's FirebaseAuth credentials.
+I created the app with a local-first software paradigm in mind; Hive Database first handles all minor changes and saves them locally, before the final data is pushed to the Firebase Firestore cloud database tagged to a user's FirebaseAuth credentials.
 
 Functionality includes:
 - Log in and Sign up, including with a Google account
